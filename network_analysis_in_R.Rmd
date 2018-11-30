@@ -1,0 +1,1407 @@
+---
+title: "Network analysis in R"
+output:
+  html_document:
+    df_print: paged
+bibliography: network_analysis_in_R.bib
+nocite: | 
+  @netCoin18, @ergm08, @ergm18
+---
+
+## 0. Overview 
+
+There are many packages in R for network analysis.
+
+Main packages grew up around modeling/analysis frameworks with core authors.
+
+Tutorial is organized by packages with examples.
+
+Covers major packages, but biased to my experience.
+
+**Analysis packages:**
+
+- statnet (ergm & tergm, hergm, xergm, Epimodel)
+- igraph
+- latentnet
+
+**Visualization packages:**
+
+- ggraph
+- visNetwork
+- networkDynamic
+
+Please ask question about anything you don't understand, including basic R questions.
+
+## A) Setup 
+
+```{r setup, echo=T, cache = T, warning = F, message = F}
+
+# list of major packages once here so you can make sure they're installed
+# Most are listed again where first used
+
+# Network-related
+library(statnet)
+library(igraph)
+library(latentnet)
+library(visNetwork)
+library(ggraph)
+
+# Other
+library(dplyr)
+library(ggrepel)
+library(lubridate)
+library(stringr)
+library(kableExtra)
+
+# Working directory - upate for your system
+wd = "~/Documents/DSI/network_analysis_in_R/"
+```
+
+## B) Some terminology (more to come)
+
+- Network or Graph
+- Nodes (or Vertices), Edges
+- *Binary* networks (0,1 edges)
+- *Valued* networks or *signed* networks
+- *Directed* (i->j is not the same edge as j->i)
+    + citations, transportation
+- *Undirected*
+    + friendships, co-occurences
+- Dyad is set of two nodes and a single edge if undirected, two edges if directed
+- *Bipartite* - two classes of nodes that only mix with the other class
+    + heterosexual sexual relationships
+- Adjacency matrix (sociomatrix)- Matrix representation of a network. N x N. 
+    + $A_{ij}$ represents the edge from node $i$ to node $j$
+    + Symmetric if network is undirected
+- Edge list - List representation; start and end of all edges.
+    + Efficient if network is sparse
+
+
+------------------------------------------------------------------------------------------
+
+# 1. `statnet` 
+
+A family of packages for all stages of network analysis based in exponential random graph models (ERGM).
+
+`statnet` (version 2018.10):  @network08, @network15, @ergm08, @ergm18    
+Depends:	`R` (≥ 3.0), `tergm` (≥ 3.5.2), `ergm.count` (≥ 3.3), `sna` (≥ 2.4), `tsna` (≥ 0.2)    
+Imports:	`ergm` (≥ 3.9.4), `network` (≥ 1.13), `networkDynamic` (≥ 0.9), `statnet.common` (≥ 4.1.4)    
+Authors: Handcock, Hunter, Butts, Goodreau, Krivitsky, Bender-deMoll, Morris.    
+
+Roots in social networks, sociology, epidemiology - smaller networks with lots of features
+
+**Exponential Random Graph Model**
+
+$$P(Y=y; X,N,\beta) = \frac{\exp({\beta_1t_1+\beta_2t_2+...+\beta_pt_p})}{C(X,N,\beta)}$$
+
+- Describes the probability of a network Y
+    + $t$ is a vector of statistics about the network which may depend on $Y$ and attributes of the nodes or edges contained in $X$.
+    + $t$ may include the number of edges, number of isolates, number of edges whose endpoint nodes match on a certain covariate, etc. 
+    + $\beta$ is a vector of coefficients that determines the impact (direction and magnitude) of the statistics
+- Maximum entropy distribution on graph space with given expected statistics
+- Simple to express, may be hard to implement
+
+- SO many graphs -> C is intractable $O(2^{n^2})$ for binary networks
+- MPLE or MCMC-MLE for inference. Explore the parameter space and find optimal values.
+- DEGENERACY
+
+ERGM are generally best-suited for smaller networks with interesting attributes that we want to explore in relation to the network structure.
+
+## Example: Supreme Court Decisions about First Amendment
+
+Providers of this data interested in :
+
+- Patterns of homophily, especially if the justice characteristics are associated with justices deciding in the similar way, e.g. 
+    + gender
+    + age
+    + religion
+
+We'll want to control for characteristics like party of appointing president. 
+
+Data starts in 1994 because that is the first year with more than one female Supreme Court justice.
+
+<center>![RBG](/Users/janecarlen/Documents/DSI/network_analysis_in_R/rbg.jpg)</center>
+
+## A) Convert raw data to a network object 
+
+Common that our data starts as one or more csv files. Edges and node attributes may be separate.
+We need to convert this to network data.
+
+#### Load and inspect data
+
+```{r supreme_court_load, echo = T, cache = T, warning = F, message = F}
+
+sc.edges = read.csv(paste(wd, "GSoCversionOpinions-EDGES.csv", sep = ""))
+sc.nodes = read.csv(paste(wd, "GSoCversionOpinions-NODES.csv", sep = ""))
+summary(sc.edges)
+summary(sc.nodes)
+```
+
+We discover that this is a bipartite network - source and target don't overlap.
+
+The edge data includes detailed opinion information which is captured by the "Target" number and "Opinion.information" variables. Let's condense this slightly to the Main, Concurrence, Dissent etc. labels contained in the "Type" variable. We will do this by grouping the Target data by case name and type. This reduces our decision nodes from 176 to 113.
+
+```{r supreme_court_condense, echo = T, cache = T, warning = F, message = F, results = "hide"}
+
+# Condense edges to coarser decision type
+sc.edges.condensed = sc.edges %>% group_by(Source, Case.name, Type) %>%  summarize(year = first(Case.date))
+sc.edges.condensed$Target = sc.edges.condensed %>% group_by(Case.name, Type) %>% group_indices()
+head(sc.edges.condensed, 10)
+```
+
+#### Convert to network data using `statnet`
+
+```{r supreme_court_network_bipartite, echo = T, cache = T, warning = F, message = F, fig.widtth = 10}
+
+library(statnet) # loads statnet, tsna, sna, ergm.count, statnet.common, tergm, networkDynamic, ergm, network
+
+n.judges = 14
+n.decisions = max(sc.edges.condensed$Target)
+
+sc.bipartite = network(sc.edges.condensed[,c("Source", "Target")], bipartite = n.judges,
+                       vertex.attr = list(vertex.type = c(rep(2,n.judges), rep(1, n.decisions)), 
+                                          year = c(rep(2,n.judges), gray(1 - (sc.edges.condensed$year - 1994)/23)),
+                                          name = c(rep(2,n.judges), sc.edges.condensed$Case.name),
+                                          label = c(as.character(sc.nodes$Label), rep("", n.decisions)),
+                                          decision.type = c(rep(1,n.judges), as.numeric(sc.edges.condensed$Type))))
+
+
+#outer brackets prevent "plot.new has not been called yet" error
+{plot(sc.bipartite,
+     vertex.sides = 2+(as.numeric(sc.bipartite%v%"vertex.type"))^4,
+     vertex.cex = sc.bipartite%v%"vertex.type", 
+     vertex.col = sc.bipartite%v%"decision.type",
+     label = sc.bipartite%v%"label",
+     main = "Bipartite Network of First Amendment Decisions 1994-2017", edge.col = "gray",
+     label.col = 4, label.cex = 1.2, label.pos = 3)
+
+legend("topleft", legend = c("Judge", "Decision"), col = 1, pch = c(19,2), cex = .7)
+legend("bottomleft", legend = levels(sc.edges.condensed$Type)[-1], col = 2:5, pch = 17, cex = .7)}
+```
+
+#### How do we create a unimodal network from a bipartite one?
+
+<center>![genius?](/Users/janecarlen/Documents/DSI/network_analysis_in_R/goodwill_question.jpg)</center>
+
+```{r supreme_court_network_unimode, echo = T, cache = T, warning = F, message = F}
+
+# project to adjacency matrix of judges
+
+sc.projection = (as.sociomatrix(sc.bipartite) %*% t(as.sociomatrix(sc.bipartite)))[1:n.judges,1:n.judges]
+
+# slight discrepancy between appearance of judges in edgelist and this projection due to=
+# duplicate edges being listed when a decision was split in two (e.g. "part" and "rest")
+
+# Add attributes and make it a network ----
+
+library(lubridate) #for "year" function
+
+sc.nodes$birthyear = year(as.Date(as.character(sc.nodes$Date.of.birth), format = "%m/%d/%Y"))
+
+sc.attr.list = list(label = c(as.character(sc.nodes$Label)),
+                          appointed = as.numeric(sc.nodes$Appointing.President[1:n.judges]),
+                          appearances = diag(sc.projection),
+                          religion = as.character(sc.nodes$Religion..broad.[1:n.judges]),
+                          gender = as.character(sc.nodes$Gender[1:n.judges]),
+                          role = as.character(sc.nodes$Role[1:n.judges]))
+
+sc.unimode = network(sc.projection, directed = F, names.eval = "codecisions", ignore.eval = F,
+                        vertex.attr = sc.attr.list)
+                     
+# variable for plotting shapes -- not use of %v% to access vertex attribute
+religion.pch = 2 + as.numeric(as.factor(sc.unimode%v%"religion")); religion.pch[religion.pch>4] = 50
+
+{plot(sc.unimode, edge.lwd = "codecisions",
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Connections of Judges in 1st Amendment Decisions")
+
+legend("topleft", legend = c("Dem. Appoint", "Rep. Appoint"), col = c(4,2), pch = 19, cex = .7)
+legend("bottomleft", legend = levels(as.factor(sc.unimode%v%"religion")), col = 1, pch = c(17,18,19), cex = .7)}
+
+```
+
+#### Why model? 
+
+- Visualization tells us some things about the network, but there's a limit on the number of things we can visualize at one time.
+
+- Statnet has a few layout options, which can change how we see the network.
+
+```{r layout modes, cache = T, eval = T, echo = F, fig.width = 8}
+
+par(mfrow = c(1,3))
+par(mai = rep(.2,4))
+
+set.seed(1)
+
+plot(sc.unimode, edge.lwd = "codecisions",
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Fruchterman Reingold",
+     mode = "fruchtermanreingold")
+
+plot(sc.unimode, edge.lwd = "codecisions",
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Circle layout",
+     mode = "circle")
+
+plot(sc.unimode, edge.lwd = "codecisions",
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Kamada-Kawai",
+     mode = "kamadakawai")
+```
+
+- PLOTTING HAS RANDOMNESS. We can use `set.seed` to fix a random location, but the randomness can impact interpretation.
+
+- Note how centrality and politics (dem vs. repub) affect the layout.
+
+- We want to analyze the effects of some factors while controlling for others.
+
+We'll use the unimodal network for modelling. It's small, gets at our questions of interest, and is relatively easy to interpret.
+
+## B) Fit ERGM variations
+
+```{r supreme_court_network_ergm, echo = T, cache = T, warning = F, message = F, fig.width = 5}
+
+#?"ergm-terms" is your friend
+
+sc.unimode%v%"birthyear" = sc.nodes$birthyear[1:n.judges]
+sc.ergm = ergm(sc.unimode ~ edges + nodematch("gender") + nodematch("religion") +
+                 nodematch("appointed") + nodecov("birthyear") + absdiff("birthyear") + 
+                 nodefactor("role"))
+
+summary(sc.ergm)
+
+# What is the relationship between birth year and degree in the network?
+# Not super strong though noticeable at the tails
+plot(sc.unimode%v%"birthyear", sc.unimode%v%"appearances")
+
+summary_formula(sc.unimode ~ density())
+```
+
+A density of about 80% is high for a social network. In our current network, which is binary, two judges are connected if they share any decision. This may be masking differences between them. We also saw from the importance of birth year that our results are skewed by how much judges overlapped in their appointments.
+
+Let's try normalizing and thinning the network using a percentage-wise cutoff for edges to be included. This is a common strategy, but we should apply it carefully because it affects our model. Ideally we would use a cutoff that is meaningful in context.
+
+```{r supreme_court_network_thin_ergm, echo = T, cache = T, warning = F, message = F}
+
+# try thinning the edges
+
+sc.projection.norm = sc.projection
+diag(sc.projection.norm) = 0
+sc.projection.norm = sc.projection.norm/rowSums(sc.projection.norm)
+hist(sc.projection.norm, breaks = 40) # histogram help choose a cutoff
+sc.projection.norm[sc.projection.norm < .1] = 0
+
+sc.unimode.thin = network(sc.projection.norm, directed = F, vertex.attr = sc.attr.list)
+sc.unimode.thin%v%"birthyear" = sc.nodes$birthyear[1:n.judges]
+
+plot(sc.unimode.thin, 
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     #vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Network of 1st Amendment Decisions")
+
+# Fit an ERGM to the thinned network
+sc.ergm.thin = ergm(sc.unimode.thin ~ edges + 
+                      nodematch("gender") + 
+                      nodematch("religion") +
+                      nodematch("appointed") + 
+                      nodecov("birthyear") +
+                      absdiff("birthyear") + 
+                      nodefactor("role"))
+
+summary(sc.ergm.thin)
+
+# Results are more interesting; now remove non-significant terms
+sc.ergm.thin = ergm(sc.unimode.thin ~ edges + 
+                      #nodematch("gender") + 
+                      nodematch("religion") +
+                      nodematch("appointed") + 
+                      nodecov("birthyear") + 
+                      absdiff("birthyear"))
+                      #nodefactor("role")
+
+summary(sc.ergm.thin)
+```
+
+> "We do not have Obama judges or Trump judges, Bush judges or Clinton judges. What we have is an extraordinary group of dedicated judges doing their level best to do equal right to those appearing before them." -Chief Justice John Roberts (11-21-2018)
+
+## C) Evaluate ERGM fit
+
+How can we tell if the fit is good?
+
+The `gof` function of `ergm` lets us simulate networks from the fit model and visualize how they compare to the observed network with a built-in plot method. It defaults to comparing along several important graph statistics.
+
+```{r supreme_court_network_ergm_gof, echo = T, cache = T, warning = F, message = F, fig.width = 8}
+
+sc.ergm.thin.gof = gof(sc.ergm.thin)
+plot(sc.ergm.thin.gof)
+
+# Inspect simulations further
+summary_formula(sc.unimode.thin ~ triangles()) #summary_formula replaced summary.statistics
+summary_formula(simulate(sc.ergm.thin) ~ triangles())
+
+# For a more holistic picture, compare a simulated to the observed one
+par(mfrow = c(1,2))
+par(mai = rep(.2, 4))
+
+plot(sc.unimode.thin, 
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     #vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Network of 1st Amendment Decisions", label.cex = .5)
+
+
+plot(simulate(sc.ergm.thin), 
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     #vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Simulation from model", label.cex = .5)
+
+
+```
+
+#### Why are these models fitting so quickly? Didn't I say it was hard?
+
+None of the models we've fit so far have required MCMC-MLE due to *dyad-indepdence*.
+
+```{r supreme_court_network_ergm_gw, echo = T, cache = T, warning = F, message = F, results = "hide"}
+
+# To force MCMC
+sc.ergm.thin.mle = ergm(sc.unimode.thin ~ edges + 
+                      nodematch("religion") +
+                      nodematch("appointed") + 
+                      nodecov("birthyear") + 
+                      absdiff("birthyear"),
+                      estimate = "MLE", control = control.ergm("force.main" = TRUE))
+
+# Dyad-dependent terms always force MCMC
+sc.ergm.thin.gw = ergm(sc.unimode.thin ~ edges + 
+                      nodematch("religion") +
+                      nodematch("appointed") + 
+                      nodecov("birthyear") + 
+                      absdiff("birthyear") +
+                      #gwesp(.5, fixed = T) + 
+                      gwdegree(.5, fixed = T))
+
+# Then we would check MCMC diagnostics and goodness-of-fit
+summary(sc.ergm.thin.gw)
+plot(sc.ergm.thin.gw) #same as mcmc.diagnostics(sc.ergm.thin.gw)
+sc.ergm.thin.gw.gof = gof(sc.ergm.thin.gw)
+plot(sc.ergm.thin.gw.gof)
+
+
+# Compare simulated to true
+par(mfrow = c(1,2))
+
+plot(sc.unimode.thin, 
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     #vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Network of 1st Amendment Decisions")
+
+plot(simulate(sc.ergm.thin.gw), 
+     vertex.col = 2*(-1*sc.unimode%v%"appointed"+4), 
+     vertex.cex = sc.unimode%v%"appearances"/15,
+     #vertex.sides = religion.pch,
+     edge.col = "gray",
+     label = sc.unimode%v%"label",
+     main = "Simulation from model")
+```
+
+Dyad-dependent terms like the geometrically weighted terms are critical when the network shows clustering, as most social networks do.
+
+Adding a `triangles` term to the model formula seems like a good idea but will fail due to model degeneracy. `ergm` will return an error message, e.g. "MCMLE estimation stuck. There may be excessive correlation between model terms, suggesting a poor model for the observed data."
+
+```{r supreme_court_network_ergm_tri, eval = F, echo = F, cache = T}
+
+sc.ergm.gw = ergm(sc.unimode.thin ~ edges + 
+                      nodematch("religion") +
+                      nodematch("appointed") + 
+                      nodecov("birthyear") + 
+                      absdiff("birthyear") +
+                      triangles)
+
+```
+
+## D) Something to try
+
+- Upload the "zach" data and convert it to a network
+- Make a plot with vertices colored by the "club"" variable
+- Fit an ergm with at least three terms (`?"ergm-terms"`)and plot a simulation from your model
+
+------------------------------------------------------------------------------------------
+
+# 2. `igraph`
+
+- More algorithmic than model-based. 
+
+- Lots of descriptive statistics and some models too. Many community detection algorithms and many layout options for plots.
+
+- Often better-suited to BIG networks.
+    + Random walk and other "local" algorithms.
+    + Some methods have options to use sparse matrices. 
+
+`igraph` has a Python version too.
+
+- May run into naming conflicts with functions from statnet or other packages. Use `igraph::` prefix.
+
+`igraph` (version 1.2.2):  @igraph06    
+Depends:	`methods`; Imports:	 `graphics`, `grDevices`, `magrittr`, `Matrix`, `pkgconfig (≥ 2.0.0)`, `stats`, `utils`     
+
+Author: Gabor Csardi - background in computer science, biophysics, statistics    
+
+## Example: Network of Journal Citations
+
+Analyze a network of statistics journals where connections describe how much one journal cites another.
+
+Data used is in supplementary material from a paper available here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4755202/
+In this case we don't have any features about the journals outside the citation counts.
+
+We may be interested in:
+
+- [Visualization of the network](#visualize)
+- [Which journals are most important? Which journals are most central in the network?](#centrality)
+- [Are there sub-communities of journals?](#community)
+- [Other features of the network such as reciprocity](#recipocity)
+
+## A) Convert raw data to a network (`igraph`) object
+
+Our network comes in the form of a valued adjacency matrix.
+
+We want to retain the information from valued edges wherever possible, instead of reducing it to a binary network.
+
+We remove self-citations by making the diagonal of the adjacency matrix zero. In previous analysis we found that the highest entries in the adjacency matrix are from journals citing themselves, e.g. CSDA (486) and StMed (628). These values could inflate journal importance.
+
+**First we load the data and convert it into a few different `igraph` networks (weighted, binary, undirected)**
+
+```{r journals_load, eval = T, cache = T, echo = T, warning = F, message = F, results = "hide"}
+
+library(igraph)
+
+Cmatrix = as.matrix(read.csv(paste(wd, "data/cross-citation-matrix.csv", sep = ""), row.names = 1)) #47 x 47
+Cmatrix.diag = Cmatrix #store a copy before removing diag
+diag(Cmatrix) = rep(0,47)
+Tmatrix = Cmatrix + t(Cmatrix)
+
+# We tranpose the Cmatrix to correspond to standard i,j entry = citation FROM i to j. 
+# Original Cmatrix has i,j indicating citation from j to i:
+Cgraph = graph_from_adjacency_matrix(t(Cmatrix), mode = "directed", weighted = TRUE)
+Cgraph.bin = graph_from_adjacency_matrix(t(Cmatrix), mode = "directed", weighted = "citations")
+Cgraph.bin.sym = graph_from_adjacency_matrix(Tmatrix, mode = "undirected", weighted = "citations")
+Cgraph.sym = graph_from_adjacency_matrix(Tmatrix, mode = "undirected", weighted = TRUE)
+```
+
+**Then we look at some basic attributes of the networks to compare and check that they were created correctly**
+
+```{r journals_info, eval = T, cache = T, echo = T, warning = F, message = F}
+edge_density(Cgraph)
+edge_density(Cgraph.sym)
+
+is.weighted(Cgraph)
+is.weighted(Cgraph.bin)
+
+Cgraph.weights = igraph::get.edge.attribute(Cgraph, "weight") #notice the name "weight"
+#citations is an edge variable in the binary graph, not an edge weight
+identical(Cgraph.weights, igraph::get.edge.attribute(Cgraph.bin, "citations"))  
+```
+
+## B) Visualize {#visualize}
+
+`igraph` has many more layout options than `statnet`. You can use the `intergraph` (@intergraph15) package to easily convert network back and forth between the two packages (primarily the functions `asIgraph` and `asNetwork`) .
+
+We can tailor the layout to our purposes, which may be visibility of nodes, visualization of clusters, or visibility of relationships. 
+
+```{r journals_plot, eval = T, cache = T, echo = T, warning = F, message = F, fig.height = 12, fig.width = 10, fig.keep = "first", dependson = c("journals_load")}
+
+par(mfrow = c(3,3))
+par(mai = rep(.2, 4))
+
+arrow.size = .2
+edge.width = .2
+
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.grid, main = "layout.grid")
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.circle, main = "layout.cirlce")
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.star, main = "layout.star")
+
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.davidson.harel, main = "layout.davidson.harel")
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.graphopt, main = "layout.graphopt")
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.mds, main = "layout.mds")
+
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout_nicely, main = "layout_nicely")
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.auto, main = "layout.fruchterman.reingold")
+plot(Cgraph, edge.arrow.size = arrow.size, edge.arrow.width = arrow.size, edge.width = edge.width,
+     layout = layout.gem, main = "layout.gem")
+```
+
+
+**Other ways to change the plot layour or supply a custom layout**
+
+```{r journals_plot2, eval = T, cache = T, echo = T, warning = F, message = F, fig.keep = "none", dependson = c("journals_load")}
+
+# Another way to change the layout
+Cgraph <- set_graph_attr(Cgraph, "layout", layout_with_kk(Cgraph)) #then plotting defaults to this layout
+
+# Producting/extracting layout coordinates
+l = igraph::layout_on_grid(Cgraph)
+plot(Cgraph, layout = l)
+```
+
+Of course we can also change the color, size and other attributes of the vertices and edges. Vertex attributes begin with `vertex.` and edge attributes begin with `edge.`.
+
+```{r journals_plot3, eval = T, cache = T, echo = T, warning = F, message = F, fig.height = 8, fig.width = 8, fig.keep = "first", dependson = c("journals_load"), results = "hide"}
+
+plot(Cgraph, layout = layout.mds, vertex.size = colSums(Cmatrix)/100,
+     vertex.color  = "skyblue", vertex.shape = "csquare", vertex.frame.color = "white",
+     vertex.label.cex = .5, vertex.label.color = "black", vertex.label.family = "mono",
+     edge.width = Cgraph.weights/20, edge.color = "orange", edge.curved = .5, edge.arrow.size = .3,
+     margin = 0, main = "Playing with plot settings")
+
+```
+
+**How can we make the overlapping nodes more visible?**
+
+We could do this in a `ggplot` family package and use `ggrepel` to force those central nodes apart (@ggraph18, @ggrepel18).
+
+```{r journals_ggplot, eval = T, cache = T, fig.width = 8, warning = F, message = F, results = "hide"}
+
+library(ggraph)
+library(ggrepel)
+
+ggraph(Cgraph, 'igraph', algorithm = 'mds') +
+  geom_edge_link(colour = "yellow2", alpha = 0.8, show.legend = F) + 
+  geom_node_point(size = colSums(Cmatrix)/100, color = "blue") + 
+  geom_node_label(aes(label = name), color = "blue", repel = TRUE, label.padding = .15) + 
+  ggtitle("ggraph version of the plot using ggrepel") + theme_void()
+
+```
+
+#### What about `ggnet`, `ggnet2` and `ggnetwork`?
+
+- `ggnet` and `ggnet2` are network plotting functions. "ggnet2 is an improved version of ggnet." Both have been folded into the GGally package. (https://briatte.github.io/ggnet/)
+
+- `ggnetwork` is from the same author as `ggnet` and `ggnet2`, 	Francois Briatte, but is not actively maintained, while `ggraph` is. This back and forth between the package authors clears things up: https://github.com/thomasp85/ggraph/issues/3.
+
+> It seems we have coded more or less the same thing: https://github.com/briatte/ggnetwork ... but your project goes further than mine... Also, my ggnetwork package was written as a proof-of-concept: unless I need to submit it for CRAN to get the paper published, I won't submit it and just leave it on GitHub, so feel free to take everything you need from it for your own package, if there is anything useful in there for you!" - Francois Briatte.
+
+tldr: `ggraph` is the go-to "gg"" package for networks.
+
+```{r journals_statnet, eval = T, cache = T, echo = F, warning = F, message = F}
+
+# If we were using network package: ####
+Cnet = as.network(t(Cmatrix), directed=T, matrix.type="a", ignore.eval=F,  
+       names.eval="citations") #as valued net, see \cite{krivitsky2015}
+
+#as a binary network
+Cbinet <- as.network(t(Cmatrix))
+
+#cited/citing
+cited = rowSums(Cmatrix) #citations in
+citing = colSums(Cmatrix) #citations out
+cite.ratio = cited/citing
+
+#normalized
+Cmatrix.norm = t(Cmatrix)/citing #entries are % of i's citations to j (column)
+Cnet.norm = as.network(Cmatrix.norm, directed=T, matrix.type="a", ignore.eval=F,
+            names.eval="citations")
+```
+
+The plot above uses the multidimensional scaling layout which attempts to preserve in two dimensions some type of distance calculated between nodes in the graph, e.g. the shortest path distance. From this layout we see some central clustering in the plot. We also see that the most of the journals with high numbers of citations, calculated by `colSums(Cmatrix)`, are generally near the middle. This leads us to our next question?
+
+## C) Which journals are most important? {#centrality}
+
+**And a related question: which journals are most *central* in the network?**
+
+Centrality and importance in a network are highly related, but not identical. 
+
+A baseline measure of the centrality of a journal could be its total degree, the sum of its in- and out- degrees. A baseline measure of the importance of a journal could be its in-degree, which in this case means the number of citations it receives from other journals. We will compare several metrics in `igraph` to these baselines. We focus on ones that apply to directed networks.
+
+- **Degree centrality** is just the number or weight of a node's edges. 
+- **Betweenness centrality** of a vertex is the number of geodesics (shortest paths) going through it. Weights, if supplied, are interpreted as distances.
+- **Closeness centrality** - (un-normalized) One over the sum of the number of steps to access every other vertex from a given vertex (@igraph06). If normalized, it is one over the *average* number of steps.
+- **Eigenvector centrality** - Not all in-links are equally valuable. Each vertex gets a score proportional to the sum of the scores of its neighbors (@newman10). Ok for strongly connected networks (path in either direction from any node to another). Difficulties with acyclic networks, e.g., article citation networks as opposed to journal networks. Zero weight given to nodes that aren't in a strongly connected component of two or more vertices or pointed to by one. 
+
+$$
+\begin{aligned}
+  x_i' &= \sum_jA_{ij}x_j\\
+  \bf{x'} &= \bf{\kappa_1x} = \bf{Ax}  \\
+\end{aligned}
+$$
+
+- **PageRank** - "The Google algorithm". Addresses limitation of Eigenvector centrality for directed networks by giving every node a minimum weight. Also differentiates between nodes that point to few vs. many other nodes. Roughly, how often a theoretical web surfer visits a given page. Popular for web search and beyond because it is is straightforward, fast and guaranteed to come to a unique solution while Eigenvector centrality may not (@gleich14).
+
+$$
+\begin{aligned}
+  x_i &= \alpha \sum_jA_{ij}\frac{x_j}{k^{out}_j} + \beta \\
+  \bf{x} &= \alpha\bf{AD^{-1}x} +\beta\bf{1} \\
+\end{aligned}
+$$
+where we let $k^{out}_j$ be 1 where it's observed to be 0, and $D$ is a matrix whose entries are zero except the diagonal, where $D_{ii} = max(1, k^{out}_i)$. There are versions where $\beta$ is customized for each node, i.e. $\beta_i$.
+
+#### Implementations in `igraph`
+
+**Degree centrality**
+
+The `degree` function of `igraph` returns the degree of each vertex, the number of connections. 
+The `strength` functions returns the weighted degrees of each vertex, the sum of the weighted connections.
+The `mode` argument of each determines, for directed networks, if you want the in-degree, out-degree or the total.
+
+```{r centrality_degree, cache = T, eval = T, echo = T, warning = F, message = F, results = "hide"}
+degree(Cgraph, mode = "in") # = rowSums(Cmatrix>0)
+strength(Cgraph, mode = "in") #= rowSums(Cmatrix)
+degree(Cgraph, mode = "out") # = colSums(Cmatrix>0)
+strength(Cgraph, mode = "out") #= colSums(Cmatrix)
+```
+
+**Betweenness centrality**
+
+In general, centrality functions on weighted graphs will use the graph's `weight` variable by default. We may have to transform it.
+
+```{r centrality_between, cache = T, eval = T, echo = T, warning = F, message = F, fig.keep = "none"}
+
+# Binary version
+cen.between.bin = estimate_betweenness(Cgraph.bin, directed = TRUE, cutoff = Inf, weights = NULL)
+
+# Weighted version, with a decreasing function of the citation weights as the "distances"
+cen.between = estimate_betweenness(Cgraph, directed = TRUE, cutoff = Inf, weights = max(log(Cgraph.weights+1)) - log(Cgraph.weights))
+
+# Relationship with corresponding degree centrality 
+{par(mfrow = c(1,2))
+
+plot(igraph::degree(Cgraph, mode = "total"), cen.between.bin, type = "n")
+text(igraph::degree(Cgraph, mode = "total"), cen.between.bin, labels = rownames(Cmatrix), cex = .5)
+
+plot(strength(Cgraph, mode = "total"), cen.between, type = "n")
+text(strength(Cgraph, mode = "total"), cen.between, labels = rownames(Cmatrix), cex = .5)}
+```
+
+**Closeness centrality**
+
+The closeness centrality in the ``in'' direction is a better indicator of influence of a journal than in the "out" direction. 
+
+```{r centrality_closeness, cache = T, eval = T, echo = T, warning = F, message = F, fig.keep = "none", fig.width = 8}
+
+# Binaryv ersion
+cen.closeness.bin = estimate_closeness(Cgraph.bin, mode = c("in"), cutoff = Inf, weights = NULL, normalized = FALSE)
+
+# Weighted version, with a decreasing function of the citation weights as the "distances"
+cen.closeness = estimate_closeness(Cgraph, mode = c("in"), cutoff = Inf, weights = max(log(Cgraph.weights+1)) - log(Cgraph.weights), normalized = FALSE)
+
+# Relationship with corresponding in-degree centrality
+{par(mfrow = c(1,2))
+
+plot(igraph::degree(Cgraph, mode = "in"), cen.closeness.bin, type = "n")
+text(igraph::degree(Cgraph, mode = "in"), cen.closeness.bin, labels = rownames(Cmatrix), cex = .5)
+
+plot(strength(Cgraph, mode = "in"), cen.closeness, type = "n")
+text(strength(Cgraph, mode = "in"), cen.closeness, labels = rownames(Cmatrix), cex = .5)}
+```
+
+**Eigenvector centrality**
+
+Eigenvector centrality interprets weights as connection strength, so no transformation of weights is needed.
+```{r centrality_eigen, cache = T, eval = T, echo = T, warning = F, message = F, fig.keep = "none", fig.width = 8}
+
+cen.eigen.bin = eigen_centrality(Cgraph.bin, directed  = TRUE)$vector
+cen.eigen = eigen_centrality(Cgraph, directed  = TRUE)$vector
+
+{par(mfrow = c(1,2))
+
+plot(igraph::degree(Cgraph, mode = "in"), cen.eigen.bin, type = "n",  main = "binary")
+text(igraph::degree(Cgraph, mode = "in"), cen.eigen.bin, labels = rownames(Cmatrix), cex = .5)
+
+plot(strength(Cgraph, mode = "in"), cen.eigen, type = "n", main = "weighted")
+text(strength(Cgraph, mode = "in"), cen.eigen, labels = rownames(Cmatrix), cex = .5)}
+
+```
+
+**PageRank**
+
+PageRank also interprets weights as connection strength, originally number of links to a website.
+
+```{r centrality_pagerank, cache = T, eval = T, echo = T, warning = F, message = F, fig.keep = "none", fig.width = 8}
+
+cen.pagerank.bin = page_rank(Cgraph.bin, directed  = TRUE)$vector
+cen.pagerank = page_rank(Cgraph, directed  = TRUE)$vector
+
+{par(mfrow = c(1,2))
+
+plot(igraph::degree(Cgraph, mode = "in"), cen.pagerank.bin, type = "n",  main = "binary")
+text(igraph::degree(Cgraph, mode = "in"), cen.pagerank.bin, labels = rownames(Cmatrix), cex = .5)
+
+plot(strength(Cgraph, mode = "in"), cen.pagerank, type = "n", main = "weighted")
+text(strength(Cgraph, mode = "in"), cen.pagerank, labels = rownames(Cmatrix), cex = .5)}
+
+```
+
+<center>![Sergei](/Users/janecarlen/Documents/DSI/network_analysis_in_R/sergei_brin.jpg)</center>
+
+**How do we choose?**
+
+Summary of centrality measures (by resulting journal rank):
+
+```{r centrality_compare, cache = T, eval = T, echo = T, warning = F, message = F, fig.keep = "none", fig.width = 8}
+
+library(kableExtra)
+
+cen.compare = data.frame(degree.in = rank(-strength(Cgraph, mode = "in"), ties.method = "first"),
+                         degree.total = rank(-strength(Cgraph, mode = "total"), ties.method = "first"),
+                         betweenness = rank(-cen.between, ties.method = "first"),
+                         closeness = rank(-cen.closeness), 
+                         eigenvector = rank(-cen.eigen),
+                         pagerank = rank(-cen.pagerank),
+                         ratio = rank(-strength(Cgraph, mode = "in")/strength(Cgraph, mode = "out")))
+
+kable(cen.compare, caption = "Comparison of centrality measures on the weighted journal network") %>%
+  kable_styling("striped", full_width = F) %>%
+  row_spec(c(3,8,19,26), bold = F, color = "white", background = "darkred", font_size = 10) %>%
+  row_spec((1:47)[-c(3,8,19,26)], bold = F, color = "black", font_size = 10)
+```
+ 
+- The highlighted rows are generally considered to be the top four statistics journals, so their rankings should be high. 
+- The `ratio` column is based on each journal's ratio of in-citations to out-citations of a journal.
+- Betweenness centrality and total degree have generally different behavior than the other measurements. Whether we use a weighted graph or not, the degree and betweenness centrality metrics will tend to favor journals with high numbers of in- and/or out- citations, nodes that are conduits for information.
+- This statistics journal data set was tailored to have relatively homogeneous connectivity between the nodes, so some differences in centrality measures aren't exposed. 
+
+I've illustrated some commonly used centrality measures in `igraph`, but there are many others.
+
+The `CINNA` package will list many centrality measures available for a graph and calculate as many of them as you'd like in one function call (@cinna18). However, it doesn't allow you to set all the parameters that you can set when calling these measures directly from `igraph` or their other native packages.
+
+```{r cinna, cache = T, eval = T, echo = T, warning = F, message = F}
+
+library(CINNA)
+# see available centralities
+cen.proper = proper_centralities(Cgraph)
+# calculate the first five of them
+cen.compare.cinna = calculate_centralities(Cgraph, include = cen.proper[1:5])
+```
+
+
+## D) Are there sub-communities of journals? {#community}
+
+#### Community detection and graph partitioning
+
+Community detection and graph partitioning are two related approaches to dividing a network into meaningful sub-groups. In the latter, the number and size of groups is generally set beforehand, and the goal is to minimize edges between groups. Community detection has the more generally stated goal to "find the natural fault lines" (@newman10). What exactly that means varies by method.
+
+Graph partitioning algorithms generally look to minimize the "cut size", i.e. the number or weight of the edges that must be cut to separate into two communities of certain sizes. 
+
+$$\text{cut size }(R) = \sum_{g(i)\neq g(j)}A_{ij},$$
+
+where $g(i)$ is the group of node $i$ after the cut. If an undirected graph, a factor of $1/2$ is added to the expression.
+
+In `igraph` the `min_cut` function is an implementation of this. 
+
+```{r journals_cut, eval = T, cache = T, fig.width = 10}
+min_cut(Cgraph.bin, value.only = FALSE)
+min_cut(Cgraph.bin.sym, value.only = FALSE)
+```
+
+Optimal graph partitions may not be useful (as above).
+
+We may want to set the group size. A simple to implement (more difficult to explain) method is based on an eigenvector of the Laplacian of the graph, a matrix formed using the adjacency matrix and diagonal matrix of nodal degrees (usually $D - A$). It turns out that this matrix describes graph structure, and its second-smallest eigenvector is valuable in finding a partition with a small $R$ (cut size). 
+
+```{r journals_spectral, eval = T, cache = T, fig.width = 10}
+
+# Spectral method
+set.seed(30)
+N = vcount(Cgraph) #47
+eigen_laplace = eigen(laplacian_matrix(Cgraph.sym))
+Cgraph.sym.weights = igraph::get.edge.attribute(Cgraph.sym, "weight")
+
+# Spectral method over all sizes
+# Compare cuts by group size using modularity, which we'll define later:
+
+mod.spec = 1:N
+mod.spec2 = 1:N
+mod.random = 1:N
+cut.size = 1:N
+for(i in 1:N) {
+  size.first = i
+  mem.spec = as.numeric(rank(eigen_laplace$vectors[,N-1]) > size.first) + 1
+  mem.spec2 = as.numeric(rank(-eigen_laplace$vectors[,N-1]) > size.first) + 1 #reverse with negative eigenvector
+  mem.random = sample(c(rep(1,i), rep(2, N-i)), N, replace = F)
+  mod.spec[i] = modularity(Cgraph.sym, membership = mem.spec, weights = Cgraph.sym.weights) # igraph modularity treats all networks as undirected
+  mod.spec2[i] = modularity(Cgraph.sym, membership = mem.spec2, weights = Cgraph.sym.weights)
+  mod.random[i] = modularity(Cgraph.sym, membership = mem.random, weights = Cgraph.sym.weights)
+  cut.size[i] = sum(Cmatrix[outer(mem.random, mem.random, "!=")]) #can see it increases for equal-sized groups
+}
+
+{plot(1:N, mod.spec, type = "l", ylim = c(-.05,.15), ylab = "modularity", xlab = "size of smaller group")
+points(1:N, mod.spec2, col = "green", type ="l", lty = 2)
+points(1:N, mod.random, col = "red", type ="l")
+legend("topleft", legend = c("spectral partition of laplacian", "complementary spectral partition", "random partition"), col=c(1,3,2), lty=1, cex = .8)}
+      
+#Visualize the highest-modularity spectral graph division
+size.first = which.max(mod.spec) #26
+gp.spectral.membership = as.numeric(rank(eigen_laplace$vectors[,N-1]) > size.first) + 1
+
+plot(Cgraph, vertex.color = 1 + gp.spectral.membership,
+     layout = layout.fruchterman.reingold,
+     edge.arrow.width = .3, edge.arrow.size = .3,
+     vertex.size = igraph::degree(Cgraph.sym)/2.5, #specify igraph to not conflict with sna
+     vertex.label.cex = .7,
+     vertex.label.color = "black", vertex.frame.color = "white")
+
+```
+
+Most common community detection or clustering algorithms expect undirected graphs. Community membership is a symmetric characteristic.
+
+*Modularity* is another way to formalize what it means to be a "community". Like cut size it looks to break relatively few edges when assigning communities, but it evaluates "few" relative to expectation. It is a measure of how many more edges occur within communities than we would expect randomly, given the nodal degrees.
+
+$$\text{modularity (Q)} = \frac{1}{2m}\sum_{ij}(A_{ij}-\frac{k_ik_j}{2m})\delta(g(i),g(j)),  $$
+where $m$ is the number of edges in the network, and $\delta(g(i),g(j))$ is 1 if $i$ and $j$ are in the same community and 0 otherwise. The $\frac{k_ik_j}{2m}$ term represents the expected number (or value) of edges between vertices $i$ and $j$, based on a hypergeometric distribution.
+
+Finding the graph split with the highest modularity is very slow for large graphs. 
+`igraph` implements several different approximate algorithms.
+
+- Louvain modularity maximization (`cluster_louvain`)
+
+- Fast greedy (`cluster_fast_greedy`)
+
+- Leading eigenvector (`cluster_leading_eigen`)
+    + Uses the leading non-negative eigenvector of the modularity matrix, analagous to spectral partitioning discussed earlier (@newman_community06).
+
+There are many other ways to measure community structure. For example, blockmodels look for *structurally equivalent* communities, where nodes in a block relate similarity to other blocks. A full review is beyond our scope, but we mention another flavor of metric implementable in `igraph` for comparision.
+
+Random-walk methods optimize relative to a random walker traversing a graph. These "local"" calculations may be faster and more suitable for very large networks. For example, the following in `igraph`:
+
+- Infomap (`cluster_infomap`)
+    + Minimize the expected ``description length'' of a random walker.
+
+- Walktrap (`cluster_walktrap`)
+    + Find densely connected subgraphs via random walks. Short random walks tend to stay in the same community.
+  
+The following plots compare the output of different clustering algorithms by coloring the nodes accordingly. For consistency all clustering algorithms are applied to the symmetric version of the journal graph where the edge weights are the total citations between two journals.
+  
+```{r journals_cluster, cache = T, eval = T, echo = T, fig.width = 12}
+
+library(stringr)
+
+set.seed(30)
+l = layout_with_fr(Cgraph)
+
+cl.membership.louvain = cluster_louvain(Cgraph.sym, weights = Cgraph.sym.weights)$membership 
+cl.membership.fast_greedy = cluster_fast_greedy(Cgraph.sym, weights = Cgraph.sym.weights)$membership 
+#cl.membership.optimal = cluster_optimal(Cgraph.sym)$membership #deprecated
+cl.membership.eigen = cluster_leading_eigen(Cgraph.sym, weights = Cgraph.sym.weights)$membership 
+cl.membership.infomap = cluster_infomap(Cgraph.sym, e.weights = Cgraph.sym.weights)$membership 
+cl.membership.walktrap = cluster_walktrap(Cgraph.sym, weights = Cgraph.sym.weights)$membership  
+# In general they defaults to use the weight variable of Cgraph.sym so weights argument not necessary
+
+# A hacky way to relevel the membership vectors so they agree
+for (elem in ls()[str_detect(ls(), "^cl\\.membership")]) {
+  assign(elem, as.numeric(relevel(as.factor(get(elem)), ref = get(elem)[1])))
+}
+
+cl.results = list(Louvain = cl.membership.louvain, 
+                  Fast_Greedy = cl.membership.fast_greedy,
+                  Eigen = cl.membership.eigen, 
+                  Infomap = cl.membership.infomap,
+                  Walktrap = cl.membership.walktrap,
+                  Spectral_graph_partition = gp.spectral.membership)
+
+#Calculate modularity for each output
+cl.mods = round(sapply(cl.results, modularity, x = Cgraph.sym, weights = Cgraph.sym.weights), 3)
+
+#plot - label with modularity
+{par(mfrow = c(2,3))
+par(mai = rep(.2, 4))
+
+for (i in seq_along(cl.results)) 
+    {plot(Cgraph.sym, vertex.color = cl.results[[i]], layout = l, cex = 2,
+        main = paste(names(cl.results)[i], cl.mods[[i]], collapse = ""))}}
+```
+
+`igraph` has a `cluster_optimal` function to do an exhaustive search for the highest-modularity communities, but this **WILL NOT WORK** unless you install the development version of `igraph`, see: https://github.com/igraph/rigraph
+
+```{r journals_cluster_optimal, cache = T, eval = T, echo = T}
+
+cl.optimal = cluster_optimal(Cgraph.sym, weights = Cgraph.sym.weights)
+plot(Cgraph.sym, vertex.color = cl.optimal$membership, layout = l, cex = 2,
+        main = paste("Optimal modularity", round(cl.optimal$modularity, 3), collapse = ""))
+```
+
+
+## E) Other features of the network {#reciprocity}
+
+- Reciprocity: 
+    + Percentage of reciprocated ties.
+    + The `reciprocity` method in `igraph` assumes a binary network.
+    + $\frac{\sum_{i, j} (B_{ij}B'_{ij})}{\sum_{ij}(B_{ij})}$ , where $B_{ij}$ is the binary representation of $A_{ij}$. 
+    + For valued networks you can use a simple correlation measure instead.
+
+```{r journals_reciprocity, eval = T, cache = T, results = "hide"}
+# Reciprocity
+reciprocity(Cgraph, ignore.loops = TRUE, mode = c("default"))
+sum((Cmatrix>0) * (t(Cmatrix)>0)) / sum(Cmatrix>0)
+reciprocity(Cgraph, ignore.loops = TRUE, mode = c("ratio"))
+sum((Cmatrix>0) * (t(Cmatrix)>0))/ sum(Tmatrix>0) #if we know there's at least one connection
+
+# For weighted graphs, a simple correlation measure
+cor(as.vector(Cmatrix), as.vector(t(Cmatrix)))
+```
+
+- Assortativity:
+    + **by degree**: Do high-degree nodes connect to other high-degree nodes? 
+    + $\sum_{ij}(e(i,j)-q_{out}(i)q_{in}(j)) / \sigma(q_{in}) * \sigma(q_{out})$, where  
+      $q_{out}(i) = \sum_j e(i,j)$, q_{in}(i)=\sum_j e(j,i)$, just the total weight out and in.
+    + **by characteristic**: Since we don't have nodal characteristics we'll use communities to illustrate
+    + r=(sum(e(i,i), i) - sum(a(i)b(i), i)) / (1 - sum(a(i)b(i), i))
+    
+```{r journals_assortativity, eval = T, cache = T, results = "hide"}
+assortativity_degree(Cgraph, directed = T)
+assortativity_nominal(Cgraph, types = cl.membership.louvain, directed = T)
+assortativity_nominal(Cgraph.bin, types = cl.membership.louvain, directed = T)
+```
+
+- Clustering coefficient or transitivity:
+    + Probability that adjacent vertices of a vertex are connected
+    + Common for social networks and other "real-world" networks to have much higher transitivity than a random graph.
+    + `transitivity` method in `igraph` assumed an undirected binary network.
+ 
+```{r journals_clustering_coef, eval = T, cache = T, results = "hide"}
+transitivity(Cgraph, type = "global", weights = Cgraph.weights) #treated as undirected, unweighted
+transitivity(Cgraph.bin.sym, type = "global")
+```
+
+- Metrics like minimum path lengths between vertices can be slow to calculate. There are packages such as `fastnet` which can do these calculations fast using parallelization and sampling (@fastnet18).
+
+## F) Something to try
+
+- Using the journal data, apply a measure for the following not discussed
+    + Vertex centrality or importance. See how it ranks the "big four" journals.
+    + Clustering, and compare the modularity. 
+    + Another graph measurement or statistic.
+    
+See here for a list of igraph functions: - https://igraph.org/r/doc/
+
+
+------------------------------------------------------------------------------------------
+
+## 3. Latentnet
+
+`latentnet` (version 2.9.0)
+Depends:	`R` (≥ 2.8.0), `statnet.common` (≥ 3.1.0), `network`, `ergm` (≥ 3.9.0)
+Imports:	`sna`, `mvtnorm`, `abind`, `coda` (≥ 0.17.1), `tools`, `MASS`
+
+A more specialized package whose authors overlap with `statnet`, but the model has roots in dissimilarity measures, but in the context of a model.
+
+Authors:	Krivitsky, Handcock, Hoff (model)
+
+ My favorite : )
+ 
+- Unobserved (social) space
+- "Enough" parameters to describe the behavior (no degeneracy)
+- Latent space network models produce model-based visualizations.
+- A residual measure of what is not captured by dyad-independent terms. 
+
+## A) Model: 
+
+$$ y_{ij} \sim Poisson(exp(\alpha + X\beta- \lVert(z_i, z_j)\rVert)), $$
+
+$$ P(Y|\theta) = \prod_{i\neq j} \frac{exp[-exp(\alpha + X\beta- \lVert(z_i, z_j)\rVert)]exp(\alpha + X\beta- \lVert(z_i, z_j)\rVert)^{A_{ij}}}{A_{ij}!},$$
+$$ log(P(Y|\theta)) = \sum_{i\neq j} -exp(\alpha + X\beta- \lVert(z_i, z_j)\rVert) + A_{ij}(\alpha + X\beta- \lVert(z_i, z_j)\rVert)) + \text{C}.$$
+
+where $\alpha$ is an intercept term, $X$ represents fixed covariates, $\beta$ is a vector of coefficients, and $z_i$ is the position of node $i$ id $d-dimensional$ space, where the value of $d$ is set before the model is fit. $\theta$ is shorthand for the full parameter set. $\lVert(z_i, z_j)\rVert$ represents the Euclidean distance between $z_i$ and $z_j$, so the farther apart two nodes are in the latent space, the lower we expect their edge weight to be. $C$ is a constant we can ignore when fitting the model.
+
+- As the distance between $i$ and $j$ grows, the expected edge weight between them shrinks
+- The edges are independent given the parameters. No degeneracy!
+- The likelihood is non-convex and the solution need not be unique so MCMC in a hierarchical modeling framework is generally used to estimate the parameters.
+- We can generalize the Poisson with log link to basically any GLM. 
+
+These models are easy to implement in the package `latentnet` (@latentnet18), but because of the estimation method they can be slow for networks over about 100 nodes.
+
+`latentnet` allows you to find the maximum likelihood estimate using fast method by setting `tofit = "mle"`, but you don't get complete information about the model.
+
+## B.) Example Model Fit: Network of Journal Citations
+- `euclidean(d=2)` argument indicates that the latent positions are two-dimensional.
+- `response` argument conveys a valued network 
+- `rsender` and `rreceiver` add terms for each node that describe in-strength and out-strength of ties.
+- Explore `?ergmm.terms` for more terms you can add to a latent space model
+- Because our data is citations counts we use the Poisson model with log link.
+
+```{r latent_2, eval = T, echo = T, cache = T, warning = F, message = F }
+latent.srp2 = ergmm(Cnet ~ euclidean(d = 2) + rsender + rreceiver,
+                    response = "citations", family = "Poisson.log", seed = 30,
+                    tofit = c("mle"),
+                    control = ergmm.control(mle.maxit = 100)) 
+# Far fewer than the default mle.maxit = 100 is needed
+```
+
+A better but slower estimation method is to use MCMC, which gives you information about uncertainty in the estimated positions.
+
+`latentnet` allows you to find the maximum likelihood estimate using fast method by setting `tofit = "mle"`, but you don't get complete information about the model.
+
+```{r latent_2_mcmc, eval = T, echo = T, cache = T, warning = F, message = F, result = "hide", fig.keep = "none"}
+
+t1 = Sys.time()
+latent.srp2 = ergmm(Cnet ~ euclidean(d = 2) + rsender + rreceiver,
+                    response = "citations", family = "Poisson.log", seed = 30,
+                    tofit = c("mcmc", "mkl", "procrustes", "mle"),
+                    control = ergmm.control(burnin = 10000, interval = 100, sample.size = 5000))
+t2 = Sys.time()
+t2 - t1 #takes about a minute
+
+```
+
+- Always check `mcmc.diagnostics` of your model. 
+
+- We can plot the resulting positions and their uncertainty 
+
+## C.) Inspect the Output
+```{r latent_2_plot, eval = T, echo = T, cache = T, warning = F, message = F, result = "hide", fig.keep = "last"}
+
+# Always check mcmc diagnostics
+mcmc.diagnostics(latent.srp2)
+
+# to correspond to visNetwork
+library(scales)
+alpha2 <- 0.6
+color1 <- c("deepskyblue3","gold", "red", "green", "deeppink", "darkorchid4", "orange", "black")
+journals.cluster <- hclust(d = as.dist(1 - cor(Tmatrix))) #method used in JRSS-A paper @varin16
+vc2 <- (latent.srp2$mkl$receiver - latent.srp2$mkl$sender)/2+1
+col2 <- alpha(color1[cutree(journals.cluster, h = 0.6)], alpha2)
+
+# plot window
+par(mai = c(.1,.1,.1,.1))
+#layout(matrix(c(1,1,1,2,2,1,1,1,2,2,1,1,1,2,2), 3, 5, byrow = TRUE), respect = T)
+par(mfrow = c(2,1))
+
+#### position plot ####
+{plot(latent.srp2$mkl$Z, col = col2, cex = vc2, pch = 16, ylim = c(-2,4), xlim = c(-6,5),
+     bty="n", yaxt="n", xaxt="n", xlab = "", ylab = "")
+text(latent.srp2$mkl$Z, labels = rownames(Cmatrix), cex = .5, pos = 3, offset = .3)
+legend("topleft", col = alpha(color1, alpha2), pch = 16, legend=c("review", "general", "theory/method", "appl./health", "computational","eco./envir.", "JSS", "StataJ"), cex=0.7, box.col=0)
+
+####  cloud/uncertainty plot  ####
+n = 47
+N = 1000
+p = latent.srp2[["sample"]][["Z"]]
+s = sample(1000, N)
+
+#null plot:
+plot(latent.srp2$mkl$Z, xlab = NA, ylab = NA, bty="n", yaxt="n", xaxt="n", type ="n",
+           xlim = c(-6,4), ylim = c(-3,5), main = NA)
+
+#add points
+for (i in 1:N) {
+  points(p[s[i],,], col = col2, pch = 15, cex = .2)
+}}
+
+```
+
+```{r journals_latent_clustering}
+{plot(latent.srp2$mkl$Z, col = 1 + cl.membership.louvain, cex = vc2, pch = 16,
+     bty="n", yaxt="n", xaxt="n", xlab = "", ylab = "", ylim = c(-2,3),
+     main = "Visualization of community detection using latent positions")
+text(latent.srp2$mkl$Z, labels = rownames(Cmatrix), cex = .5, pos = 3, offset = .3)}
+```
+
+## D.) Dynamic Visualization
+
+Finally, we can use an interactive plot to better-visualize the output.
+
+```{r latent_sr2_interactive, eval = F, results = 'hide', dependson= c("setup", "latent_sr2", "setup_jrss", "latent2_stigler"), fig.keep='last', echo = F, fig.height=5, fig.width=6, cache = T, warning=F, message=F}
+
+library(visNetwork)
+
+# data ####
+nodes <- data.frame(id = 1:47, 
+                    label = Cnet%v%"vertex.names",
+                    #title = Cnet%v%"vertex.names", #for selection dropdown
+                    title = Cnet%v%"vertex.names", #for tooltip
+                    value = vc2, #conveys node size, on a scale from 0-1
+                    group = rep((cutree(journals.cluster, h = 0.6))))
+
+
+edges <- data.frame(from=data.frame(as.edgelist(Cnet))$X1, 
+                    to=data.frame(as.edgelist(Cnet))$X2)
+
+cite_igraph <- graph.data.frame(edges, directed=TRUE, vertices=nodes)
+Z = as.matrix(latent.srp2$mkl$Z)
+Z<- -Z[ ,c(2,1)] #to preserve orientaiton in paper
+
+# Think the edges
+strength = .03 #only include "strong receivers", e.g. receiver accounts for >.05 = 5% of sender's citations sent [different form the plot in `compare_clustered`]
+#interesting plot with strength = .1 (100 edges remain)  
+# Cmatrix.norm = t(Cmatrix)/citing #entries are % of i's citations to j (column); rows sum to 1; 'citing' is total out for each journal
+
+Cstrong = t(Cmatrix)
+Cstrong[Cmatrix.norm<strength] = 0
+Cnet_strong = as.network(Cstrong, directed=T, matrix.type="a", ignore.eval=F,  names.eval="citations")
+
+edges2 <- data.frame(from=data.frame(as.edgelist(Cnet_strong))$X1, 
+                    to=data.frame(as.edgelist(Cnet_strong))$X2,
+                    value = as.edgelist(Cnet_strong, as.sna.edgelist = T, attrname = "citations")[,3])
+
+# dynamic plot ####
+
+visNetwork(nodes, edges2, main = "Statistics Journals", submain = "latent space positions") %>%
+  visIgraphLayout(cite_igraph, layout = "layout.norm",
+                  layoutMatrix = cbind(-Z[,2],Z[,1]), type = "full") %>%
+  #visOptions(highlightNearest = list(enabled =TRUE, degree = 1)) %>%
+  visNodes(shape = "dot",
+           scaling = list(min = 3, max = 15),
+           labelHighlightBold = TRUE,
+           font= list(size = 20, color = "black", strokeWidth = 1)) %>%
+  visOptions(highlightNearest = list(enabled = TRUE, degree = .5),
+             nodesIdSelection = FALSE, 
+             selectedBy = "title") %>% 
+  visEdges(shadow = FALSE,
+           scaling = list(min = 1, max = 15),
+           arrows = list(to = list(enabled = FALSE, scaleFactor = 3),
+                    middle = list(enabled = TRUE, scaleFactor = 1)),
+           color = list(inherit = "from", highlight = "red", opacity = .03),
+           hidden = F,
+           smooth = list(type = "curvedCW")) 
+```
+
+
+------------------------------------------------------------------------------------------
+
+## 4. Additional packages:
+
+## A) Interactive co-indicence network with `netCoin`.
+
+The `netcoin` package (@netcoin18) is geared to analyzing co-incidence networks, but has a great tool for interactive plotting that can be used for any relatively small network. 
+
+```{r judges_netcoin, eval = T, echo = T, message = F, warning = F, cache = T}
+
+library(netCoin)
+
+sc.coin = coin(t(as.sociomatrix(sc.bipartite)))
+tmp = asNodes(sc.coin); tmp$Label = sc.nodes$Label[1:n.judges]
+sc.nodes = read.csv(paste(wd, "GSoCversionOpinions-NODES.csv", sep = ""))
+sc.nodes = data.frame(cbind(name = as.character(sc.nodes$Label), sc.nodes))
+sc.nodes.tmp = sc.nodes[1:n.judges,]
+sc.nodes.tmp$name = 1:14 # a character vector didn't work REPORT!
+sc.nodes.tmp$frequency = tmp$frequency
+
+sc.allnet = allNet(incidences = t(as.sociomatrix(sc.bipartite)), nodes = sc.nodes.tmp)
+plot(sc.allnet)
+```
+
+We're concerned that the number of overlapping cases between two justices is influencing their implied similarity.
+
+We can pick a similarity metric that somewhat accounts for this. If neither judge is attached to a decision, it is because neither made that decision, or one or both were not on the bench at that time. We are not interested in the latter case, so we want to focus our attention on the number of times they decided in the same way, relative to the number of times they decided in the same or different ways. For this we can use the Kulczynski similarity metric @netCoin18.
+
+$$\text{Kulczynski} = (\frac{a}{a+b} + \frac{a}{a+c})/2,$$
+
+where $a, b, c, d$ describe co-occurrence between two events as follows:
+
+```{r similarity_table, echo = F, results = "asis", fig.width = 3, cache  = T, warnoing = F, message = F}
+
+library(knitr)
+library(kableExtra)
+
+kable(data.frame(present = c("a","b"), absent = c("c","d"), row.names = c("present", "absent")), format = "html") %>%
+  kableExtra::kable_styling(full_width = F) #%>% add_header_above(c(" ", "Event 2" = 2))
+```
+
+A complete analysis would normalize for the number of possible co-occurrences of any two justices when calculating edge strength or similarity more generally.
+
+```{r judges_netcoin2, eval = T, echo = T, message = F, warning = F, cache = T}
+
+sc.allnet = allNet(incidences = t(as.sociomatrix(sc.bipartite)), nodes = sc.nodes.tmp, procedures = c("f", "i", "ii", "r", "k", "h"))
+sc.allnet
+round(cor(sc.allnet[["links"]][,c("frequencies", "sConditional", "tConditional", "Russell", "Kulczynski", "Haberman", "p(Z)")]), 2)
+plot(sc.allnet)
+```
+
+We can use the drop-down to compare the various similarity/distance metrics and use the color and width to highlight the strength of relationships.
+
+These are the other metrics in the drop-down. We let the diagonal of the adjacency matrix equal the number of appearances of each justice:
+
+- frequencies = $A_jk$
+- sConditional = $A_jk/A_jj$
+- tConditional = $A_jk/A_kk$
+- Russel is $\frac{a}{a+b+c+d}$
+
+- Haberman is a standardized measure of how much the observed $A_jk$ exceeds what we could have expected if $j$ and $k$ were independent. P(Z) puts that value on a normal scale, where a lower probability suggests stronger dependence.
+
+As expected, the Kulczynski metric can highlight relationships outside the nodes that occur most often. The Haberman metric, and with it the P(Z) can as well, reflecting their standardization.
+
+## B) Dynamic visualizaiton with `networkDynamic` and `ndtv`
+ 
+Illustrate the functionality of one of the dynamic visualization packages in combination with the `scholar` package.
+ 
+```{r dynamic_vis_setup, eval = T, cache = T, warning = F, message = F}
+
+library(stringr)
+library(statnet)
+library(scholar)
+library(networkDynamic)
+library(ndtv)
+library(ergm)
+library(igraph)
+```
+
+```{r dynamic_vis, echo = T, results = "hide", eval = T, cache = T, warning = F, message = F}
+
+butts = get_publications("-VGAs1cAAAAJ&hl=en", cstart = 0, pagesize = 100, flush = T)
+
+#limited in that only 6 or 7 authors show up
+butts.coauthors = sapply(as.character(butts$author), strsplit, ", ")
+
+#fixes
+butts[which(butts$year==1861), "year"] = 2016
+
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "C Butts", replacement = "CT Butts")
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "MCT Butts", replacement = "CT Butts")
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "ZW Almquist", replacement = "Z Almquist")
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "SB de-Moll", replacement = "S  Bender-deMoll")
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "PN Krivitsky", replacement = "P Krivitsky")
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "DR Hunter", replacement = "D Hunter")
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "RM Acton", replacement = "R Acton")
+butts.coauthors = lapply(butts.coauthors, str_replace, pattern = "S Mark", replacement = "MS Handcock")
+butts.coauthors = lapply(butts.coauthors, function(x) x[x!="..."])
+
+#make sure butts in all
+butts.coauthors = sapply(butts.coauthors, function(x) {
+  if (! ("CT Butts" %in% x)) {
+    x = c(x,"CT Butts") 
+  } else x = x})
+
+# dealt with multiple butts'
+#butts.coauthors.unique[str_detect(butts.coauthors.unique, "[w|W]illiams")]
+butts.coauthors.unique = unique(unlist(butts.coauthors))
+sort(butts.coauthors.unique)
+
+# 1. Co-authors ####
+
+#which.max(lapply(lapply(butts.coauthors, str_detect, "S butts Cowper"), sum))
+butts.edges = lapply(butts.coauthors, function(x) {butts.coauthors.unique %in% x})
+
+# number of single
+butts.degree = sapply(butts.edges, sum); table(butts.degree)
+
+N = length(butts.coauthors.unique)
+P = length(butts.edges)
+tmp = matrix(do.call(cbind, butts.edges), nrow = N, ncol = P)
+rownames(tmp) = butts.coauthors.unique
+butts.mat = tmp %*% t(tmp)
+
+author.codegree = butts.mat["CT Butts",]
+author.codegree2 = log(author.codegree) + .5
+
+# 2. static net ####
+
+#set.seed(3) there is randomness in the layouts
+butts.net = as.network(butts.mat, directed = F, names.eval = "edge.lwd", ignore.eval = F)
+butts.net%v%"author" = butts.coauthors.unique
+butts.net%v%"vertex.cex" = author.codegree2 #how many papers with butts?
+butts.net%v%"vertex.pid" = 1:length(butts.coauthors.unique) #how many papers with butts?
+
+plot.network(butts.net, edge.col = "white", 
+             label = "vertex.names", label.cex = .5,
+             label.pad = 0, label.pos = 1,
+             edge.lwd = butts.net%e%"edge.lwd")
+
+butts.igraph = intergraph::asIgraph(butts.net)
+butts.layout = data.frame(layout.fruchterman.reingold(butts.igraph))
+colnames(butts.layout) = c("x","y")
+
+# 3. dynamic net ####
+
+table(butts$year)
+slices = seq(1997,2018, by = 1)
+start = min(slices); end = max(slices)
+author.first = sapply(butts.coauthors.unique, #flexible depending on source google scholar or pamela
+  function(x) {
+   min(butts[which(sapply(butts.coauthors, function(y) {x %in% y})),"year"], na.rm = T)
+  })
+
+butts.network.list = lapply(slices, function(i) {
+  authors.sub = author.first <= i
+  butts.sort = subset(butts, butts$year <= i)
+  N.sub = sum(authors.sub)
+  P.sub = nrow(butts.sort)
+  butts.edges.sub = lapply(butts.edges[butts$year <= i], function(x) x[authors.sub])
+  tmp = matrix(do.call(cbind, butts.edges.sub), nrow = N.sub, ncol = P.sub)
+  
+  rownames(tmp) = butts.coauthors.unique[authors.sub]
+  coauthor.mat = tmp %*% t(tmp)
+  coauthor.net = as.network(coauthor.mat, directed = F, names.eval = "edge.lwd", ignore.eval = F)
+  coauthor.net%v%"author" = butts.coauthors.unique[authors.sub]
+  coauthor.net%v%"x" = butts.layout$x[authors.sub]
+  coauthor.net%v%"y" = butts.layout$y[authors.sub]
+  coauthor.net%v%"vertex.pid" = which(authors.sub)
+  coauthor.net%v%"vertex.cex" = author.codegree2[authors.sub] #how many papers with butts?
+  return(coauthor.net)
+})
+
+tmp = vector(mode = "list", length=min(slices)-1)
+tmp = lapply(tmp, function(x) butts.network.list[[1]])
+butts.network.list = c(tmp, butts.network.list)
+
+butts.dynamic = networkDynamic(base.net=butts.net, network.list = butts.network.list,
+                                  vertex.pid = "vertex.pid", create.TEAs = T)
+butts.dynamic 
+
+compute.animation(butts.dynamic, animation.mode = "useAttribute",
+                  slice.par=list(start=start, end=end, interval=2, aggregate.dur = 2, rule='latest'),
+                  weight.attr = c("edge.lwd"))
+
+render.d3movie(butts.dynamic, usearrows = F, displaylabels = T,
+               #col = "white", #fix in html
+               label= "author",
+               vertex.cex = "vertex.cex",
+               vertex.tooltip=paste(butts.net%v%'author', sep = "<br>"),
+               label.col = "white",
+               label.cex = .8,
+               vertex.col = "skyblue4",
+               edge.col = "navy",
+               edge.lwd = "edge.lwd",
+               main = "Carter Butts Co-Author Network over Time: 1997-2018",
+               xlab = "test",
+               bg="black",
+               vertex.border="#333333",
+               render.par = list(show.time = TRUE, show.stats = "~edges"),
+               #launchBrowser=F, filename="~/Documents/DSI/butts/buttsNet.html", 
+               d3.options = list(slider = TRUE))
+
+```
+
+------------------------------------------------------------------------------------------
+
+## 5. More resources
+
+- https://github.com/briatte/awesome-network-analysis
+- http://kateto.net/network-visualization
+- https://sites.fas.harvard.edu/~airoldi/pub/books/BookDraft-CsardiNepuszAiroldi2016.pdf
+- "Network" by M.E.J. Newman. (In the first edition numbering) Chapter 7 "Measures and metrics" and Chapter 11 "Matrix algorithms and graph partitioning" overlaps most with the underlying material of this tutorial (but the book doesn't get into code) (@newman10). 
+
+------------------------------------------------------------------------------------------
+
+#  References
