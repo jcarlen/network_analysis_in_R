@@ -1,0 +1,579 @@
+Source,Target,Opinion information,Type,ID,Case ID,Case name,Case date
+1,15,"Court opinion I, IIIA",Main,1,1,Matal,2017
+2,15,"Court opinion I, IIIA",Main,2,1,Matal,2017
+3,15,"Court opinion I, IIIA",Main,3,1,Matal,2017
+4,15,"Court opinion I, IIIA",Main,4,1,Matal,2017
+5,15,"Court opinion I, IIIA",Main,5,1,Matal,2017
+6,15,"Court opinion I, IIIA",Main,6,1,Matal,2017
+7,15,"Court opinion I, IIIA",Main,7,1,Matal,2017
+8,15,"Court opinion I, IIIA",Main,8,1,Matal,2017
+1,16,II,Main,9,1,Matal,2017
+2,16,II,Main,10,1,Matal,2017
+3,16,II,Main,11,1,Matal,2017
+4,16,II,Main,12,1,Matal,2017
+5,16,II,Main,13,1,Matal,2017
+6,16,II,Main,14,1,Matal,2017
+7,16,II,Main,15,1,Matal,2017
+1,17,"IIIB, IIIC, IV",Main,16,1,Matal,2017
+2,17,"IIIB, IIIC, IV",Main,17,1,Matal,2017
+5,17,"IIIB, IIIC, IV",Main,18,1,Matal,2017
+8,17,"IIIB, IIIC, IV",Main,19,1,Matal,2017
+3,18,Concurrence 1,Concurrence,20,1,Matal,2017
+4,18,Concurrence 1,Concurrence,21,1,Matal,2017
+6,18,Concurrence 1,Concurrence,22,1,Matal,2017
+7,18,Concurrence 1,Concurrence,23,1,Matal,2017
+8,19,Concurrence 2,Concurrence,24,1,Matal,2017
+2,20,Court opinion  ,Main,25,2,Reed,2015
+3,20,Court opinion  ,Main,26,2,Reed,2015
+6,20,Court opinion  ,Main,27,2,Reed,2015
+8,20,Court opinion  ,Main,28,2,Reed,2015
+9,20,Court opinion  ,Main,29,2,Reed,2015
+1,21,Concurrence 1,Concurrence,30,2,Reed,2015
+3,21,Concurrence 1,Concurrence,31,2,Reed,2015
+6,21,Concurrence 1,Concurrence,32,2,Reed,2015
+5,22,Concurrence 2,Concurrence,33,2,Reed,2015
+4,23,Concurrence 3,Concurrence,34,2,Reed,2015
+5,23,Concurrence 3,Concurrence,35,2,Reed,2015
+7,23,Concurrence 3,Concurrence,36,2,Reed,2015
+2,24,Court opinion (except II),Main,37,3,Williams-Yulee,2015
+4,24,Court opinion (except II),Main,38,3,Williams-Yulee,2015
+5,24,Court opinion (except II),Main,39,3,Williams-Yulee,2015
+6,24,Court opinion (except II),Main,40,3,Williams-Yulee,2015
+7,24,Court opinion (except II),Main,41,3,Williams-Yulee,2015
+5,25,II,Main,42,3,Williams-Yulee,2015
+6,25,II,Main,43,3,Williams-Yulee,2015
+7,25,II,Main,44,3,Williams-Yulee,2015
+5,26,Concurrence 1,Concurrence,45,3,Williams-Yulee,2015
+4,27,Concurrence 2 (except II),Concurrence,46,3,Williams-Yulee,2015
+4,28,Concurrence 2 II,Concurrence,47,3,Williams-Yulee,2015
+5,28,Concurrence 2 II,Concurrence,48,3,Williams-Yulee,2015
+8,29,Dissent 1,Dissent,49,3,Williams-Yulee,2015
+9,29,Dissent 1,Dissent,50,3,Williams-Yulee,2015
+3,30,Dissent 2,Dissent,51,3,Williams-Yulee,2015
+1,31,Dissent 3,Dissent,52,3,Williams-Yulee,2015
+1,32,Court opinion,Main,53,4,Lane,2014
+2,32,Court opinion,Main,54,4,Lane,2014
+3,32,Court opinion,Main,55,4,Lane,2014
+4,32,Court opinion,Main,56,4,Lane,2014
+5,32,Court opinion,Main,57,4,Lane,2014
+6,32,Court opinion,Main,58,4,Lane,2014
+7,32,Court opinion,Main,59,4,Lane,2014
+8,32,Court opinion,Main,60,4,Lane,2014
+9,32,Court opinion,Main,61,4,Lane,2014
+1,33,Concurrence,Concurrence,62,4,Lane,2014
+8,33,Concurrence,Concurrence,63,4,Lane,2014
+9,33,Concurrence,Concurrence,64,4,Lane,2014
+1,34,Court opinion,Main,65,5,McCutcheon,2014
+2,34,Court opinion,Main,66,5,McCutcheon,2014
+3,34,Court opinion,Main,67,5,McCutcheon,2014
+9,34,Court opinion,Main,68,5,McCutcheon,2014
+8,35,Concurrence,Concurrence,69,5,McCutcheon,2014
+4,36,Dissent,Dissent,70,5,McCutcheon,2014
+5,36,Dissent,Dissent,71,5,McCutcheon,2014
+6,36,Dissent,Dissent,72,5,McCutcheon,2014
+7,36,Dissent,Dissent,73,5,McCutcheon,2014
+1,37,Court opinion,Main,74,6,Agency,2013
+2,37,Court opinion,Main,75,6,Agency,2013
+3,37,Court opinion,Main,76,6,Agency,2013
+4,37,Court opinion,Main,77,6,Agency,2013
+5,37,Court opinion,Main,78,6,Agency,2013
+6,37,Court opinion,Main,79,6,Agency,2013
+8,38,Dissent,Dissent,80,6,Agency,2013
+9,38,Dissent,Dissent,81,6,Agency,2013
+2,39,Court opinion,Main,82,7,Xavier,2012
+3,39,Court opinion,Main,83,7,Xavier,2012
+4,39,Court opinion,Main,84,7,Xavier,2012
+6,39,Court opinion,Main,85,7,Xavier,2012
+5,40,Concurrence,Concurrence,86,7,Xavier,2012
+7,40,Concurrence,Concurrence,87,7,Xavier,2012
+1,41,Dissent,Dissent,88,7,Xavier,2012
+8,41,Dissent,Dissent,89,7,Xavier,2012
+9,41,Dissent,Dissent,90,7,Xavier,2012
+1,42,Court opinion,Main,91,8,Knox,2012
+2,42,Court opinion,Main,92,8,Knox,2012
+3,42,Court opinion,Main,93,8,Knox,2012
+8,42,Court opinion,Main,94,8,Knox,2012
+9,42,Court opinion,Main,95,8,Knox,2012
+4,43,Concurrence,Concurrence,96,8,Knox,2012
+6,43,Concurrence,Concurrence,97,8,Knox,2012
+5,44,Dissent,Dissent,98,8,Knox,2012
+7,44,Dissent,Dissent,99,8,Knox,2012
+3,45,Court opinion,Main,100,9,Brown,2011
+4,45,Court opinion,Main,101,9,Brown,2011
+6,45,Court opinion,Main,102,9,Brown,2011
+7,45,Court opinion,Main,103,9,Brown,2011
+9,45,Court opinion,Main,104,9,Brown,2011
+1,46,Concurrence,Concurrence,105,9,Brown,2011
+2,46,Concurrence,Concurrence,106,9,Brown,2011
+8,47,Dissent 1,Dissent,107,9,Brown,2011
+5,48,Dissent 2,Dissent,108,9,Brown,2011
+1,49,Court opinion,Main,109,10,Duryea,2011
+2,49,Court opinion,Main,110,10,Duryea,2011
+3,49,Court opinion,Main,111,10,Duryea,2011
+4,49,Court opinion,Main,112,10,Duryea,2011
+5,49,Court opinion,Main,113,10,Duryea,2011
+6,49,Court opinion,Main,114,10,Duryea,2011
+7,49,Court opinion,Main,115,10,Duryea,2011
+8,50,Concurrence,Concurrence,116,10,Duryea,2011
+9,51,Concurrence/Dissent,Concurrence/Dissent,117,10,Duryea,2011
+2,52,Court opinion,Main,118,11,Nevada Comm,2011
+3,52,Court opinion,Main,119,11,Nevada Comm,2011
+4,52,Court opinion,Main,120,11,Nevada Comm,2011
+5,52,Court opinion,Main,121,11,Nevada Comm,2011
+6,52,Court opinion,Main,122,11,Nevada Comm,2011
+7,52,Court opinion,Main,123,11,Nevada Comm,2011
+8,52,Court opinion,Main,124,11,Nevada Comm,2011
+9,52,Court opinion,Main,125,11,Nevada Comm,2011
+3,53,Concurrence 1,Concurrence,126,11,Nevada Comm,2011
+1,54,Concurrence 2,Concurrence,127,11,Nevada Comm,2011
+2,55,Court opinion,Main,128,12,Snyder,2011
+3,55,Court opinion,Main,129,12,Snyder,2011
+4,55,Court opinion,Main,130,12,Snyder,2011
+5,55,Court opinion,Main,131,12,Snyder,2011
+6,55,Court opinion,Main,132,12,Snyder,2011
+7,55,Court opinion,Main,133,12,Snyder,2011
+8,55,Court opinion,Main,134,12,Snyder,2011
+9,55,Court opinion,Main,135,12,Snyder,2011
+5,56,Concurrence,Concurrence,136,12,Snyder,2011
+1,57,Dissent,Dissent,137,12,Snyder,2011
+3,58,Court opinion,Main,138,13,CLS,2010
+4,58,Court opinion,Main,139,13,CLS,2010
+5,58,Court opinion,Main,140,13,CLS,2010
+6,58,Court opinion,Main,141,13,CLS,2010
+10,58,Court opinion,Main,142,13,CLS,2010
+10,59,Concurrence 1,Concurrence,143,13,CLS,2010
+3,60,Concurrence 2,Concurrence,144,13,CLS,2010
+1,61,Dissent,Dissent,145,13,CLS,2010
+2,61,Dissent,Dissent,146,13,CLS,2010
+8,61,Dissent,Dissent,147,13,CLS,2010
+9,61,Dissent,Dissent,148,13,CLS,2010
+2,62,Court opinion,Main,149,14,Stevens,2010
+3,62,Court opinion,Main,150,14,Stevens,2010
+4,62,Court opinion,Main,151,14,Stevens,2010
+5,62,Court opinion,Main,152,14,Stevens,2010
+6,62,Court opinion,Main,153,14,Stevens,2010
+8,62,Court opinion,Main,154,14,Stevens,2010
+9,62,Court opinion,Main,155,14,Stevens,2010
+10,62,Court opinion,Main,156,14,Stevens,2010
+1,63,Dissent,Dissent,157,14,Stevens,2010
+1,64,Court opinion (not part IV),Main,158,15,Citizens United,2010
+2,64,Court opinion (not part IV),Main,159,15,Citizens United,2010
+3,64,Court opinion (not part IV),Main,160,15,Citizens United,2010
+8,64,Court opinion (not part IV),Main,161,15,Citizens United,2010
+9,64,Court opinion (not part IV),Main,162,15,Citizens United,2010
+1,65,IV,Main,163,15,Citizens United,2010
+2,65,IV,Main,164,15,Citizens United,2010
+3,65,IV,Main,165,15,Citizens United,2010
+8,65,IV,Main,166,15,Citizens United,2010
+9,65,IV,Main,167,15,Citizens United,2010
+10,65,IV,Main,168,15,Citizens United,2010
+1,66,Concurrence 1,Concurrence,169,15,Citizens United,2010
+2,66,Concurrence 1,Concurrence,170,15,Citizens United,2010
+1,67,Concurrence 2 (part),Concurrence,171,15,Citizens United,2010
+8,67,Concurrence 2 (part),Concurrence,172,15,Citizens United,2010
+9,67,Concurrence 2 (part),Concurrence,173,15,Citizens United,2010
+1,67,Concurrence 2 (rest),Concurrence,174,15,Citizens United,2010
+9,67,Concurrence 2 (rest),Concurrence,175,15,Citizens United,2010
+4,68,Concurrece/Dissent 1,Concurrence/Dissent,176,15,Citizens United,2010
+5,68,Concurrece/Dissent 1,Concurrence/Dissent,177,15,Citizens United,2010
+6,68,Concurrece/Dissent 1,Concurrence/Dissent,178,15,Citizens United,2010
+10,68,Concurrece/Dissent 1,Concurrence/Dissent,179,15,Citizens United,2010
+8,69,Concurrece/Dissent 2,Concurrence/Dissent,180,15,Citizens United,2010
+1,70,Court opinion (not I or III),Main,181,16,Ysursa,2009
+2,70,Court opinion (not I or III),Main,182,16,Ysursa,2009
+3,70,Court opinion (not I or III),Main,183,16,Ysursa,2009
+8,70,Court opinion (not I or III),Main,184,16,Ysursa,2009
+9,70,Court opinion (not I or III),Main,185,16,Ysursa,2009
+1,71,I and III,Main,186,16,Ysursa,2009
+2,71,I and III,Main,187,16,Ysursa,2009
+3,71,I and III,Main,188,16,Ysursa,2009
+4,71,I and III,Main,189,16,Ysursa,2009
+8,71,I and III,Main,190,16,Ysursa,2009
+9,71,I and III,Main,191,16,Ysursa,2009
+4,72,Concurrence,Concurrence,192,16,Ysursa,2009
+5,73,Concurrence/Dissent,Concurrence/Dissent,193,16,Ysursa,2009
+10,74,Dissent 1,Dissent,194,16,Ysursa,2009
+11,75,Dissent 2,Dissent,195,16,Ysursa,2009
+2,76,Court opinion,Main,196,18,Morse,2007
+9,76,Court opinion,Main,197,18,Morse,2007
+3,76,Court opinion,Main,198,18,Morse,2007
+8,76,Court opinion,Main,199,18,Morse,2007
+1,76,Court opinion,Main,200,18,Morse,2007
+1,77,Concurrence,Concurrence,201,18,Morse,2007
+3,77,Concurrence,Concurrence,202,18,Morse,2007
+5,78,Concurrence/Dissent,Concurrence/Dissent,203,18,Morse,2007
+10,79,Dissent,Dissent,204,18,Morse,2007
+11,79,Dissent,Dissent,205,18,Morse,2007
+4,79,Dissent,Dissent,206,18,Morse,2007
+11,80,Court opinion,Main,207,20,McCreary,2005
+10,80,Court opinion,Main,208,20,McCreary,2005
+12,80,Court opinion,Main,209,20,McCreary,2005
+4,80,Court opinion,Main,210,20,McCreary,2005
+5,80,Court opinion,Main,211,20,McCreary,2005
+12,81,Concurrence,Concurrence,212,20,McCreary,2005
+9,82,Dissent part,Dissent,213,20,McCreary,2005
+13,82,Dissent part,Dissent,214,20,McCreary,2005
+8,82,Dissent part,Dissent,215,20,McCreary,2005
+9,83,Dissent rest (II and III),Dissent,216,20,McCreary,2005
+13,83,Dissent rest (II and III),Dissent,217,20,McCreary,2005
+8,83,Dissent rest (II and III),Dissent,218,20,McCreary,2005
+3,83,Dissent rest (II and III),Dissent,219,20,McCreary,2005
+10,84,Court opinion BCRA I&II,Main,220,21,McConnell,2003
+12,84,Court opinion BCRA I&II,Main,221,21,McConnell,2003
+11,84,Court opinion BCRA I&II,Main,222,21,McConnell,2003
+4,84,Court opinion BCRA I&II,Main,223,21,McConnell,2003
+5,84,Court opinion BCRA I&II,Main,224,21,McConnell,2003
+13,85,Court opinion BCRA III&IV 1,Main,225,21,McConnell,2003
+12,85,Court opinion BCRA III&IV 1,Main,226,21,McConnell,2003
+9,85,Court opinion BCRA III&IV 1,Main,227,21,McConnell,2003
+3,85,Court opinion BCRA III&IV 1,Main,228,21,McConnell,2003
+11,85,Court opinion BCRA III&IV 1,Main,229,21,McConnell,2003
+10,85,Court opinion BCRA III&IV 1,Main,230,21,McConnell,2003
+4,85,Court opinion BCRA III&IV 1,Main,231,21,McConnell,2003
+5,85,Court opinion BCRA III&IV 1,Main,232,21,McConnell,2003
+13,86,Court opinion BCRA III&IV 2,Main,233,21,McConnell,2003
+12,86,Court opinion BCRA III&IV 2,Main,234,21,McConnell,2003
+9,86,Court opinion BCRA III&IV 2,Main,235,21,McConnell,2003
+3,86,Court opinion BCRA III&IV 2,Main,236,21,McConnell,2003
+11,86,Court opinion BCRA III&IV 2,Main,237,21,McConnell,2003
+8,86,Court opinion BCRA III&IV 2,Main,238,21,McConnell,2003
+13,87,Court opinion BCRA III&IV 3,Main,239,21,McConnell,2003
+12,87,Court opinion BCRA III&IV 3,Main,240,21,McConnell,2003
+9,87,Court opinion BCRA III&IV 3,Main,241,21,McConnell,2003
+3,87,Court opinion BCRA III&IV 3,Main,242,21,McConnell,2003
+11,87,Court opinion BCRA III&IV 3,Main,243,21,McConnell,2003
+10,87,Court opinion BCRA III&IV 3,Main,244,21,McConnell,2003
+4,87,Court opinion BCRA III&IV 3,Main,245,21,McConnell,2003
+5,87,Court opinion BCRA III&IV 3,Main,246,21,McConnell,2003
+8,87,Court opinion BCRA III&IV 3,Main,247,21,McConnell,2003
+5,88,Court opinion BCRA V,Main,248,21,McConnell,2003
+10,88,Court opinion BCRA V,Main,249,21,McConnell,2003
+12,88,Court opinion BCRA V,Main,250,21,McConnell,2003
+11,88,Court opinion BCRA V,Main,251,21,McConnell,2003
+4,88,Court opinion BCRA V,Main,252,21,McConnell,2003
+9,89,Concurrence 1,Concurrence,253,21,McConnell,2003
+9,90,Dissent 1,Dissent,254,21,McConnell,2003
+9,91,Concurrence/Dissent 1,Concurrence/Dissent,255,21,McConnell,2003
+8,92,Concurrence 2,Concurrence,256,21,McConnell,2003
+8,93,Concurrence/Dissent 2,Concurrence/Dissent,257,21,McConnell,2003
+8,94,Dissent 2 (part),Dissent,258,21,McConnell,2003
+8,94,Dissent 2 (rest),Dissent,259,21,McConnell,2003
+9,94,Dissent 2 (rest),Dissent,260,21,McConnell,2003
+3,95,Concurrence/Dissent 3 (part),Concurrence/Dissent,261,21,McConnell,2003
+13,95,Concurrence/Dissent 3 (part),Concurrence/Dissent,262,21,McConnell,2003
+3,96,Concurrence/Dissent 3 (part 2),Concurrence/Dissent,263,21,McConnell,2003
+13,96,Concurrence/Dissent 3 (part 2),Concurrence/Dissent,264,21,McConnell,2003
+9,96,Concurrence/Dissent 3 (part 2),Concurrence/Dissent,265,21,McConnell,2003
+3,97,Concurrence/Dissent 3 (part 3),Concurrence/Dissent,266,21,McConnell,2003
+13,97,Concurrence/Dissent 3 (part 3),Concurrence/Dissent,267,21,McConnell,2003
+9,97,Concurrence/Dissent 3 (part 3),Concurrence/Dissent,268,21,McConnell,2003
+8,97,Concurrence/Dissent 3 (part 3),Concurrence/Dissent,269,21,McConnell,2003
+13,98,Dissent 3,Dissent,270,21,McConnell,2003
+9,98,Dissent 3,Dissent,271,21,McConnell,2003
+3,98,Dissent 3,Dissent,272,21,McConnell,2003
+10,99,Dissent 4,Dissent,273,21,McConnell,2003
+4,99,Dissent 4,Dissent,274,21,McConnell,2003
+5,99,Dissent 4,Dissent,275,21,McConnell,2003
+9,100,Court opinion,Main,276,24,Hicks,2003
+8,100,Court opinion,Main,277,24,Hicks,2003
+13,100,Court opinion,Main,278,24,Hicks,2003
+12,100,Court opinion,Main,279,24,Hicks,2003
+4,100,Court opinion,Main,280,24,Hicks,2003
+10,100,Court opinion,Main,281,24,Hicks,2003
+3,100,Court opinion,Main,282,24,Hicks,2003
+11,100,Court opinion,Main,283,24,Hicks,2003
+5,100,Court opinion,Main,284,24,Hicks,2003
+11,101,Concurrence,Concurrence,285,24,Hicks,2003
+5,101,Concurrence,Concurrence,286,24,Hicks,2003
+9,102,Court opinion,Main,287,25,White,2002
+13,102,Court opinion,Main,288,25,White,2002
+12,102,Court opinion,Main,289,25,White,2002
+3,102,Court opinion,Main,290,25,White,2002
+8,102,Court opinion,Main,291,25,White,2002
+12,103,Concurrence 1,Concurrence,292,25,White,2002
+3,104,Concurrence 2,Concurrence,293,25,White,2002
+10,105,Dissent 1,Dissent,294,25,White,2002
+11,105,Dissent 1,Dissent,295,25,White,2002
+4,105,Dissent 1,Dissent,296,25,White,2002
+5,105,Dissent 1,Dissent,297,25,White,2002
+4,106,Dissent 2,Dissent,298,25,White,2002
+10,106,Dissent 2,Dissent,299,25,White,2002
+11,106,Dissent 2,Dissent,300,25,White,2002
+5,106,Dissent 2,Dissent,301,25,White,2002
+10,107,Court opinion,Main,302,27,Watchtower,2002
+12,107,Court opinion,Main,303,27,Watchtower,2002
+3,107,Court opinion,Main,304,27,Watchtower,2002
+11,107,Court opinion,Main,305,27,Watchtower,2002
+4,107,Court opinion,Main,306,27,Watchtower,2002
+5,107,Court opinion,Main,307,27,Watchtower,2002
+5,108,Concurrence,Concurrence,308,27,Watchtower,2002
+11,108,Concurrence,Concurrence,309,27,Watchtower,2002
+4,108,Concurrence,Concurrence,310,27,Watchtower,2002
+9,109,Concurrence/Dissent,Concurrence/Dissent,311,27,Watchtower,2002
+8,109,Concurrence/Dissent,Concurrence/Dissent,312,27,Watchtower,2002
+13,110,Dissent,Dissent,313,27,Watchtower,2002
+8,111,"Court opinion I, II, IV",Main,314,28,Ashcroft v. ACLU,2002
+13,111,"Court opinion I, II, IV",Main,315,28,Ashcroft v. ACLU,2002
+12,111,"Court opinion I, II, IV",Main,316,28,Ashcroft v. ACLU,2002
+9,111,"Court opinion I, II, IV",Main,317,28,Ashcroft v. ACLU,2002
+5,111,"Court opinion I, II, IV",Main,318,28,Ashcroft v. ACLU,2002
+8,112,Court opinion IIIB,Main,319,28,Ashcroft v. ACLU,2002
+13,112,Court opinion IIIB,Main,320,28,Ashcroft v. ACLU,2002
+12,112,Court opinion IIIB,Main,321,28,Ashcroft v. ACLU,2002
+9,112,Court opinion IIIB,Main,322,28,Ashcroft v. ACLU,2002
+8,113,"Court opinion IIIA,C,D",Main,323,28,Ashcroft v. ACLU,2002
+13,113,"Court opinion IIIA,C,D",Main,324,28,Ashcroft v. ACLU,2002
+9,113,"Court opinion IIIA,C,D",Main,325,28,Ashcroft v. ACLU,2002
+12,114,Concurrence/Dissent 1,Concurrence/Dissent,326,28,Ashcroft v. ACLU,2002
+5,115,Concurrence/Dissent 2,Concurrence/Dissent,327,28,Ashcroft v. ACLU,2002
+3,116,Concurrence,Concurrence,328,28,Ashcroft v. ACLU,2002
+11,116,Concurrence,Concurrence,329,28,Ashcroft v. ACLU,2002
+4,116,Concurrence,Concurrence,330,28,Ashcroft v. ACLU,2002
+10,117,Dissent,Dissent,331,28,Ashcroft v. ACLU,2002
+12,118,Court opinion,Main,332,29,Alameda Books,2002
+13,118,Court opinion,Main,333,29,Alameda Books,2002
+9,118,Court opinion,Main,334,29,Alameda Books,2002
+8,118,Court opinion,Main,335,29,Alameda Books,2002
+9,119,Concurrence 1,Concurrence,336,29,Alameda Books,2002
+3,120,Concurrence 2,Concurrence,337,29,Alameda Books,2002
+11,121,Dissent part,Dissent,338,29,Alameda Books,2002
+10,121,Dissent part,Dissent,339,29,Alameda Books,2002
+4,121,Dissent part,Dissent,340,29,Alameda Books,2002
+11,122,Dissent rest,Dissent,341,29,Alameda Books,2002
+10,122,Dissent rest,Dissent,342,29,Alameda Books,2002
+4,122,Dissent rest,Dissent,343,29,Alameda Books,2002
+5,122,Dissent rest,Dissent,344,29,Alameda Books,2002
+3,123,Court opinion,Main,345,30,Ashcroft v. FSC,2002
+10,123,Court opinion,Main,346,30,Ashcroft v. FSC,2002
+11,123,Court opinion,Main,347,30,Ashcroft v. FSC,2002
+4,123,Court opinion,Main,348,30,Ashcroft v. FSC,2002
+5,123,Court opinion,Main,349,30,Ashcroft v. FSC,2002
+8,124,Concurrence,Concurrence,350,30,Ashcroft v. FSC,2002
+12,125,Concurrence/Dissent part,Concurrence/Dissent,351,30,Ashcroft v. FSC,2002
+12,125,Concurrence/Dissent rest,Concurrence/Dissent,352,30,Ashcroft v. FSC,2002
+13,125,Concurrence/Dissent rest,Concurrence/Dissent,353,30,Ashcroft v. FSC,2002
+9,125,Concurrence/Dissent rest,Concurrence/Dissent,354,30,Ashcroft v. FSC,2002
+13,126,Dissent part,Dissent,355,30,Ashcroft v. FSC,2002
+13,127,Dissent rest,Dissent,356,30,Ashcroft v. FSC,2002
+9,127,Dissent rest,Dissent,357,30,Ashcroft v. FSC,2002
+3,128,Court opinion,Main,358,32,United Foods,2001
+13,128,Court opinion,Main,359,32,United Foods,2001
+10,128,Court opinion,Main,360,32,United Foods,2001
+9,128,Court opinion,Main,361,32,United Foods,2001
+11,128,Court opinion,Main,362,32,United Foods,2001
+8,128,Court opinion,Main,363,32,United Foods,2001
+10,129,Concurrence 1,Concurrence,364,32,United Foods,2001
+8,130,Concurrence 2,Concurrence,365,32,United Foods,2001
+5,131,Dissent I&III,Dissent,366,32,United Foods,2001
+4,131,Dissent I&III,Dissent,367,32,United Foods,2001
+12,131,Dissent I&III,Dissent,368,32,United Foods,2001
+5,132,Dissent II,Dissent,369,32,United Foods,2001
+4,132,Dissent II,Dissent,370,32,United Foods,2001
+10,133,Court opinion,Main,371,33,Bartnicki,2001
+12,133,Court opinion,Main,372,33,Bartnicki,2001
+3,133,Court opinion,Main,373,33,Bartnicki,2001
+11,133,Court opinion,Main,374,33,Bartnicki,2001
+4,133,Court opinion,Main,375,33,Bartnicki,2001
+5,133,Court opinion,Main,376,33,Bartnicki,2001
+5,134,Concurrence,Concurrence,377,33,Bartnicki,2001
+12,134,Concurrence,Concurrence,378,33,Bartnicki,2001
+13,135,Dissent,Dissent,379,33,Bartnicki,2001
+9,135,Dissent,Dissent,380,33,Bartnicki,2001
+8,135,Dissent,Dissent,381,33,Bartnicki,2001
+10,136,Court opinion,Main,382,34,GNOBA,1999
+13,136,Court opinion,Main,383,34,GNOBA,1999
+12,136,Court opinion,Main,384,34,GNOBA,1999
+9,136,Court opinion,Main,385,34,GNOBA,1999
+3,136,Court opinion,Main,386,34,GNOBA,1999
+11,136,Court opinion,Main,387,34,GNOBA,1999
+4,136,Court opinion,Main,388,34,GNOBA,1999
+5,136,Court opinion,Main,389,34,GNOBA,1999
+13,137,Concurrence 1,Concurrence,390,34,GNOBA,1999
+8,138,Concurrence 2,Concurrence,391,34,GNOBA,1999
+10,139,Court opinion,Main,392,35,Reno v. ACLU,1997
+9,139,Court opinion,Main,393,35,Reno v. ACLU,1997
+3,139,Court opinion,Main,394,35,Reno v. ACLU,1997
+11,139,Court opinion,Main,395,35,Reno v. ACLU,1997
+8,139,Court opinion,Main,396,35,Reno v. ACLU,1997
+4,139,Court opinion,Main,397,35,Reno v. ACLU,1997
+5,139,Court opinion,Main,398,35,Reno v. ACLU,1997
+12,140,Concurrence/Dissent,Concurrence/Dissent,399,35,Reno v. ACLU,1997
+13,140,Concurrence/Dissent,Concurrence/Dissent,400,35,Reno v. ACLU,1997
+10,141,Court opinion,Main,401,36,Wileman Bros.,1997
+12,141,Court opinion,Main,402,36,Wileman Bros.,1997
+3,141,Court opinion,Main,403,36,Wileman Bros.,1997
+4,141,Court opinion,Main,404,36,Wileman Bros.,1997
+5,141,Court opinion,Main,405,36,Wileman Bros.,1997
+11,142,Dissent 1 part,Dissent,406,36,Wileman Bros.,1997
+13,142,Dissent 1 part,Dissent,407,36,Wileman Bros.,1997
+9,142,Dissent 1 part,Dissent,408,36,Wileman Bros.,1997
+8,142,Dissent 1 part,Dissent,409,36,Wileman Bros.,1997
+11,143,Dissent 1 Part II,Dissent,410,36,Wileman Bros.,1997
+13,143,Dissent 1 Part II,Dissent,411,36,Wileman Bros.,1997
+9,143,Dissent 1 Part II,Dissent,412,36,Wileman Bros.,1997
+8,144,Dissent 2 part,Dissent,413,36,Wileman Bros.,1997
+8,145,Dissent 2 part 2,Dissent,414,36,Wileman Bros.,1997
+9,145,Dissent 2 part 2,Dissent,415,36,Wileman Bros.,1997
+12,146,"Court opinion I,IIA,IIB2,III",Main,416,37,Umbehr,1996
+13,146,"Court opinion I,IIA,IIB2,III",Main,417,37,Umbehr,1996
+10,146,"Court opinion I,IIA,IIB2,III",Main,418,37,Umbehr,1996
+3,146,"Court opinion I,IIA,IIB2,III",Main,419,37,Umbehr,1996
+11,146,"Court opinion I,IIA,IIB2,III",Main,420,37,Umbehr,1996
+4,146,"Court opinion I,IIA,IIB2,III",Main,421,37,Umbehr,1996
+5,146,"Court opinion I,IIA,IIB2,III",Main,422,37,Umbehr,1996
+12,147,Court opinion IIB1,Main,423,37,Umbehr,1996
+10,147,Court opinion IIB1,Main,424,37,Umbehr,1996
+3,147,Court opinion IIB1,Main,425,37,Umbehr,1996
+11,147,Court opinion IIB1,Main,426,37,Umbehr,1996
+4,147,Court opinion IIB1,Main,427,37,Umbehr,1996
+5,147,Court opinion IIB1,Main,428,37,Umbehr,1996
+9,148,Dissent,Dissent,429,37,Umbehr,1996
+8,148,Dissent,Dissent,430,37,Umbehr,1996
+10,149,"Court opinion I,II,VII",Main,431,38,44 Liquormart,1996
+9,149,"Court opinion I,II,VII",Main,432,38,44 Liquormart,1996
+3,149,"Court opinion I,II,VII",Main,433,38,44 Liquormart,1996
+11,149,"Court opinion I,II,VII",Main,434,38,44 Liquormart,1996
+8,149,"Court opinion I,II,VII",Main,435,38,44 Liquormart,1996
+4,149,"Court opinion I,II,VII",Main,436,38,44 Liquormart,1996
+10,150,Court opinion VIII,Main,437,38,44 Liquormart,1996
+9,150,Court opinion VIII,Main,438,38,44 Liquormart,1996
+3,150,Court opinion VIII,Main,439,38,44 Liquormart,1996
+11,150,Court opinion VIII,Main,440,38,44 Liquormart,1996
+4,150,Court opinion VIII,Main,441,38,44 Liquormart,1996
+10,151,"Court opinion III,V",Main,442,38,44 Liquormart,1996
+3,151,"Court opinion III,V",Main,443,38,44 Liquormart,1996
+11,151,"Court opinion III,V",Main,444,38,44 Liquormart,1996
+4,151,"Court opinion III,V",Main,445,38,44 Liquormart,1996
+10,152,Court opinion VI,Main,446,38,44 Liquormart,1996
+3,152,Court opinion VI,Main,447,38,44 Liquormart,1996
+8,152,Court opinion VI,Main,448,38,44 Liquormart,1996
+4,152,Court opinion VI,Main,449,38,44 Liquormart,1996
+10,153,Court opinion IV,Main,450,38,44 Liquormart,1996
+3,153,Court opinion IV,Main,451,38,44 Liquormart,1996
+4,153,Court opinion IV,Main,452,38,44 Liquormart,1996
+9,154,Concurrence/Dissent 1,Concurrence/Dissent,453,38,44 Liquormart,1996
+8,155,Concurrence/Dissent 2,Concurrence/Dissent,454,38,44 Liquormart,1996
+12,156,Concurrence/Dissent 3,Concurrence/Dissent,455,38,44 Liquormart,1996
+13,156,Concurrence/Dissent 3,Concurrence/Dissent,456,38,44 Liquormart,1996
+11,156,Concurrence/Dissent 3,Concurrence/Dissent,457,38,44 Liquormart,1996
+5,156,Concurrence/Dissent 3,Concurrence/Dissent,458,38,44 Liquormart,1996
+9,157,"Court opinion I,II,III",Main,459,39,Pinette,1995
+13,157,"Court opinion I,II,III",Main,460,39,Pinette,1995
+12,157,"Court opinion I,II,III",Main,461,39,Pinette,1995
+3,157,"Court opinion I,II,III",Main,462,39,Pinette,1995
+11,157,"Court opinion I,II,III",Main,463,39,Pinette,1995
+8,157,"Court opinion I,II,III",Main,464,39,Pinette,1995
+5,157,"Court opinion I,II,III",Main,465,39,Pinette,1995
+9,158,Court opinion IV,Main,466,39,Pinette,1995
+13,158,Court opinion IV,Main,467,39,Pinette,1995
+3,158,Court opinion IV,Main,468,39,Pinette,1995
+8,158,Court opinion IV,Main,469,39,Pinette,1995
+8,159,Concurrence,Concurrence,470,39,Pinette,1995
+12,160,Concurrence/Dissent 1,Concurrence/Dissent,471,39,Pinette,1995
+11,160,Concurrence/Dissent 1,Concurrence/Dissent,472,39,Pinette,1995
+5,160,Concurrence/Dissent 1,Concurrence/Dissent,473,39,Pinette,1995
+11,161,Concurrence/Dissent 2,Concurrence/Dissent,474,39,Pinette,1995
+12,161,Concurrence/Dissent 2,Concurrence/Dissent,475,39,Pinette,1995
+5,161,Concurrence/Dissent 2,Concurrence/Dissent,476,39,Pinette,1995
+10,162,Dissent 1,Dissent,477,39,Pinette,1995
+4,163,Dissent 2,Dissent,478,39,Pinette,1995
+10,164,Court opinion,Main,479,40,McIntyre,1995
+12,164,Court opinion,Main,480,40,McIntyre,1995
+3,164,Court opinion,Main,481,40,McIntyre,1995
+11,164,Court opinion,Main,482,40,McIntyre,1995
+4,164,Court opinion,Main,483,40,McIntyre,1995
+5,164,Court opinion,Main,484,40,McIntyre,1995
+4,165,Concurrence,Concurrence,485,40,McIntyre,1995
+8,166,Concurrence/Dissent,Concurrence/Dissent,486,40,McIntyre,1995
+9,167,Dissent,Dissent,487,40,McIntyre,1995
+13,167,Dissent,Dissent,488,40,McIntyre,1995
+13,168,Court opinion part,Main,489,41,Madsen,1994
+14,168,Court opinion part,Main,490,41,Madsen,1994
+12,168,Court opinion part,Main,491,41,Madsen,1994
+11,168,Court opinion part,Main,492,41,Madsen,1994
+4,168,Court opinion part,Main,493,41,Madsen,1994
+13,169,"Court opinion Parts I,II,IIIE,IV",Main,494,41,Madsen,1994
+14,169,"Court opinion Parts I,II,IIIE,IV",Main,495,41,Madsen,1994
+12,169,"Court opinion Parts I,II,IIIE,IV",Main,496,41,Madsen,1994
+11,169,"Court opinion Parts I,II,IIIE,IV",Main,497,41,Madsen,1994
+4,169,"Court opinion Parts I,II,IIIE,IV",Main,498,41,Madsen,1994
+10,169,"Court opinion Parts I,II,IIIE,IV",Main,499,41,Madsen,1994
+11,170,Concurrence,Concurrence,500,41,Madsen,1994
+10,171,Concurrence/Dissent 1,Concurrence/Dissent,501,41,Madsen,1994
+9,172,Concurrence/Dissent 2,Concurrence/Dissent,502,41,Madsen,1994
+3,172,Concurrence/Dissent 2,Concurrence/Dissent,503,41,Madsen,1994
+8,172,Concurrence/Dissent 2,Concurrence/Dissent,504,41,Madsen,1994
+3,173,Court opinion Part I,Main,505,42,TBS,1994
+13,173,Court opinion Part I,Main,506,42,TBS,1994
+14,173,Court opinion Part I,Main,507,42,TBS,1994
+12,173,Court opinion Part I,Main,508,42,TBS,1994
+9,173,Court opinion Part I,Main,509,42,TBS,1994
+11,173,Court opinion Part I,Main,510,42,TBS,1994
+8,173,Court opinion Part I,Main,511,42,TBS,1994
+4,173,Court opinion Part I,Main,512,42,TBS,1994
+10,173,Court opinion Part I,Main,513,42,TBS,1994
+3,174,"Court opinion Part IIA,IIB",Main,514,42,TBS,1994
+13,174,"Court opinion Part IIA,IIB",Main,515,42,TBS,1994
+14,174,"Court opinion Part IIA,IIB",Main,516,42,TBS,1994
+12,174,"Court opinion Part IIA,IIB",Main,517,42,TBS,1994
+9,174,"Court opinion Part IIA,IIB",Main,518,42,TBS,1994
+11,174,"Court opinion Part IIA,IIB",Main,519,42,TBS,1994
+8,174,"Court opinion Part IIA,IIB",Main,520,42,TBS,1994
+4,174,"Court opinion Part IIA,IIB",Main,521,42,TBS,1994
+3,175,"Court opinon Part IIC,IID,IIIA",Main,522,42,TBS,1994
+13,175,"Court opinon Part IIC,IID,IIIA",Main,523,42,TBS,1994
+14,175,"Court opinon Part IIC,IID,IIIA",Main,524,42,TBS,1994
+10,175,"Court opinon Part IIC,IID,IIIA",Main,525,42,TBS,1994
+11,175,"Court opinon Part IIC,IID,IIIA",Main,526,42,TBS,1994
+3,176,Court opinion Part IIIB,Main,527,42,TBS,1994
+13,176,Court opinion Part IIIB,Main,528,42,TBS,1994
+14,176,Court opinion Part IIIB,Main,529,42,TBS,1994
+11,176,Court opinion Part IIIB,Main,530,42,TBS,1994
+14,177,Concurrence,Concurrence,531,42,TBS,1994
+10,178,Concurrence/Dissent 1,Concurrence/Dissent,532,42,TBS,1994
+12,179,Concurrence/Dissent 2 part,Concurrence/Dissent,533,42,TBS,1994
+9,179,Concurrence/Dissent 2 part,Concurrence/Dissent,534,42,TBS,1994
+4,179,Concurrence/Dissent 2 part,Concurrence/Dissent,535,42,TBS,1994
+12,180,Concurrence/Dissent 2 rest,Concurrence/Dissent,536,42,TBS,1994
+9,180,Concurrence/Dissent 2 rest,Concurrence/Dissent,537,42,TBS,1994
+4,180,Concurrence/Dissent 2 rest,Concurrence/Dissent,538,42,TBS,1994
+8,180,Concurrence/Dissent 2 rest,Concurrence/Dissent,539,42,TBS,1994
+4,181,Concurrence/Dissent 3,Concurrence/Dissent,540,42,TBS,1994
+4,182,Court opinion Part IIB,Main,541,43,Ibanez,1994
+14,182,Court opinion Part IIB,,542,43,Ibanez,1994
+10,182,Court opinion Part IIB,,543,43,Ibanez,1994
+9,182,Court opinion Part IIB,,544,43,Ibanez,1994
+3,182,Court opinion Part IIB,,545,43,Ibanez,1994
+11,182,Court opinion Part IIB,,546,43,Ibanez,1994
+8,182,Court opinion Part IIB,,547,43,Ibanez,1994
+12,182,Court opinion Part IIB,,548,43,Ibanez,1994
+13,182,Court opinion Part IIB,,549,43,Ibanez,1994
+4,183,"Court opinion Part I,IIA,IIC",,550,43,Ibanez,1994
+14,183,"Court opinion Part I,IIA,IIC",,551,43,Ibanez,1994
+10,183,"Court opinion Part I,IIA,IIC",,552,43,Ibanez,1994
+9,183,"Court opinion Part I,IIA,IIC",,553,43,Ibanez,1994
+3,183,"Court opinion Part I,IIA,IIC",,554,43,Ibanez,1994
+11,183,"Court opinion Part I,IIA,IIC",,555,43,Ibanez,1994
+8,183,"Court opinion Part I,IIA,IIC",,556,43,Ibanez,1994
+12,184,Concurrence/Dissent,Concurrence/Dissent,557,43,Ibanez,1994
+13,184,Concurrence/Dissent,Concurrence/Dissent,558,43,Ibanez,1994
+10,185,Court opinion,Main,559,44,Ladue,1994
+4,185,Court opinion,Main,560,44,Ladue,1994
+14,185,Court opinion,Main,561,44,Ladue,1994
+9,185,Court opinion,Main,562,44,Ladue,1994
+3,185,Court opinion,Main,563,44,Ladue,1994
+11,185,Court opinion,Main,564,44,Ladue,1994
+8,185,Court opinion,Main,565,44,Ladue,1994
+12,185,Court opinion,Main,566,44,Ladue,1994
+13,185,Court opinion,Main,567,44,Ladue,1994
+12,186,Concurrence,Concurrence,568,44,Ladue,1994
+12,187,Court opinion,Main,569,45,Waters,1994
+13,187,Court opinion,Main,570,45,Waters,1994
+11,187,Court opinion,Main,571,45,Waters,1994
+4,187,Court opinion,Main,572,45,Waters,1994
+11,188,Concurrence,Concurrence,573,45,Waters,1994
+9,189,Concurrence/Dissent,Concurrence/Dissent,574,45,Waters,1994
+3,189,Concurrence/Dissent,Concurrence/Dissent,575,45,Waters,1994
+8,189,Concurrence/Dissent,Concurrence/Dissent,576,45,Waters,1994
+10,190,Dissent,Dissent,577,45,Waters,1994
+14,190,Dissent,Dissent,578,45,Waters,1994
