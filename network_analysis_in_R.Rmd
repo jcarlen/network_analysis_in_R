@@ -163,11 +163,7 @@ library(statnet) # loads statnet, tsna, sna, ergm.count, statnet.common, tergm, 
 n.judges = 14
 n.decisions = max(sc.edges.condensed$Target)
 
-sc.bipartite = network(sc.edges.condensed[,c("Source", "Target")], bipartite = n.judges,
-                       vertex.attr = list(vertex.type = c(rep(2,n.judges), rep(1, n.decisions)), 
-                                          year = c(rep(2,n.judges), gray(1 - (sc.edges.condensed$year - 1994)/23)),
-                                          name = c(rep(2,n.judges), sc.edges.condensed$Case.name),
-                                          label = c(as.character(sc.nodes$Label), rep("", n.decisions)),
+sc.bipartite = network(sc.edges.condensed[,c("Source", "Target")], bipartite = n.judges, vertex.attr = list(vertex.type = c(rep(2,n.judges), rep(1, n.decisions)), year = c(rep(2,n.judges), gray(1 - (sc.edges.condensed$year - 1994)/23)), name = c(rep(2,n.judges), sc.edges.condensed$Case.name),label = c(as.character(sc.nodes$Label), rep("", n.decisions)),
                                           decision.type = c(rep(1,n.judges), as.numeric(sc.edges.condensed$Type))))
 
 
@@ -210,8 +206,7 @@ sc.attr.list = list(label = c(as.character(sc.nodes$Label)),
                           gender = as.character(sc.nodes$Gender[1:n.judges]),
                           role = as.character(sc.nodes$Role[1:n.judges]))
 
-sc.unimode = network(sc.projection, directed = F, names.eval = "codecisions", ignore.eval = F,
-                        vertex.attr = sc.attr.list)
+sc.unimode = network(sc.projection, directed = F, names.eval = "codecisions", ignore.eval = F,vertex.attr = sc.attr.list)
                      
 # variable for plotting shapes -- not use of %v% to access vertex attribute
 religion.pch = 2 + as.numeric(as.factor(sc.unimode%v%"religion")); religion.pch[religion.pch>4] = 50
@@ -580,6 +575,7 @@ Cgraph <- set_graph_attr(Cgraph, "layout", layout_with_kk(Cgraph)) #then plottin
 
 # Producting/extracting layout coordinates
 l = igraph::layout_on_grid(Cgraph)
+l
 plot(Cgraph, layout = l)
 ```
 
@@ -1255,7 +1251,7 @@ As expected, the Kulczynski metric can highlight relationships other than those 
 round(cor(sc.allnet[["links"]][,c("frequencies", "sConditional", "tConditional", "Russell", "Kulczynski", "Haberman", "p(Z)")]), 2)
 ```
 
-## B) Dynamic visualizaiton with `networkDynamic` and `ndtv`
+## B) Dynamic visualization with `networkDynamic` and `ndtv`
 
 #### Example: Co-authorship network over time
 
