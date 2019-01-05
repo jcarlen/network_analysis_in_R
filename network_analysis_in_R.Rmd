@@ -1396,7 +1396,7 @@ render.d3movie(butts.dynamic, usearrows = F, displaylabels = T,
 - https://github.com/briatte/awesome-network-analysis
 - http://kateto.net/network-visualization
 - https://sites.fas.harvard.edu/~airoldi/pub/books/BookDraft-CsardiNepuszAiroldi2016.pdf
-- "Network" by M.E.J. Newman. (In the first edition numbering) Chapter 7 "Measures and metrics" and Chapter 11 "Matrix algorithms and graph partitioning" overlap most with the underlying material of this tutorial. The book doesn't get into code (@newman10). 
+- "Networks" by M.E.J. Newman. (In the first edition numbering) Chapter 7 "Measures and metrics" and Chapter 11 "Matrix algorithms and graph partitioning" overlap most with the underlying material of this tutorial. The book doesn't get into code (@newman10). 
 
 ------------------------------------------------------------------------------------------
 
