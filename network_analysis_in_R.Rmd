@@ -58,8 +58,8 @@ library(stringr)
 library(kableExtra)
 library(scales)
 
-# Working directory - upate for your system
-wd = "~/Documents/DSI/network_analysis_in_R/"
+# Working directory - update for your system
+wd = "~/Documents/network_analysis_in_R"
 ```
 
 ## B) Some terminology (more to come)
@@ -123,9 +123,9 @@ Providers of this data interested in :
 
 We'll want to control for characteristics like party of appointing president. 
 
-Data starts in 1994 because that is the first year with more than one female Supreme Court justice.
+Data starts in 1994 because that is the **first year with more than one female Supreme Court justice**.
 
-<center>![RBG](/Users/janecarlen/Documents/DSI/network_analysis_in_R/rbg.jpg)</center>
+<!-- <center>![RBG](/Users/janecarlen/Documents/DSI/network_analysis_in_R/rbg.jpg)</center> -->
 
 ## A) Convert raw data to a network object 
 
@@ -136,8 +136,8 @@ We need to convert this to network data.
 
 ```{r supreme_court_load, echo = T, cache = T, warning = F, message = F}
 
-sc.edges = read.csv(paste(wd, "data/GSoCversionOpinions-EDGES.csv", sep = ""))
-sc.nodes = read.csv(paste(wd, "data/GSoCversionOpinions-NODES.csv", sep = ""))
+sc.edges = read.csv(file.path(wd, "data/GSoCversionOpinions-EDGES.csv"))
+sc.nodes = read.csv(file.path(wd, "data/GSoCversionOpinions-NODES.csv"))
 summary(sc.edges)
 summary(sc.nodes)
 ```
@@ -156,15 +156,23 @@ head(sc.edges.condensed, 10)
 
 #### Convert to network data using `statnet`
 
-```{r supreme_court_network_bipartite, echo = T, cache = T, warning = F, message = F, fig.widtth = 10}
+```{r supreme_court_network_bipartite, echo = T, cache = T, warning = F, message = F, fig.widtth = 10, fig.height = 12}
 
 library(statnet) # loads statnet, tsna, sna, ergm.count, statnet.common, tergm, networkDynamic, ergm, network
 
 n.judges = 14
 n.decisions = max(sc.edges.condensed$Target)
+sc.edges.condensed$Target = sc.edges.condensed$Target + as.integer(n.judges) #shift these indices up to avoid overlap with Source
 
-sc.bipartite = network(sc.edges.condensed[,c("Source", "Target")], bipartite = n.judges, vertex.attr = list(vertex.type = c(rep(2,n.judges), rep(1, n.decisions)), year = c(rep(2,n.judges), gray(1 - (sc.edges.condensed$year - 1994)/23)), name = c(rep(2,n.judges), sc.edges.condensed$Case.name),label = c(as.character(sc.nodes$Label), rep("", n.decisions)),
-                                          decision.type = c(rep(1,n.judges), as.numeric(sc.edges.condensed$Type))))
+sc.bipartite = network(sc.edges.condensed[,c("Source", "Target")],
+                       bipartite = TRUE, 
+                       directed = FALSE,
+                       vertex.attr = list(vertex.type = c(rep(2,n.judges), rep(1, n.decisions)), 
+                                          year = c(rep(2,n.judges), gray(1 - (sc.edges.condensed$year - 1994)/23)), 
+                                          name = c(rep(2,n.judges), sc.edges.condensed$Case.name),
+                                          label = c(as.character(sc.nodes$Label), rep("", n.decisions)),
+                                          decision.type = c(rep(1,n.judges), as.numeric(as.factor(sc.edges.condensed$Type))))
+                       )
 
 
 #outer brackets prevent "plot.new has not been called yet" error
@@ -177,12 +185,12 @@ sc.bipartite = network(sc.edges.condensed[,c("Source", "Target")], bipartite = n
      label.col = 4, label.cex = 1.2, label.pos = 3)
 
 legend("topleft", legend = c("Judge", "Decision"), col = 1, pch = c(19,2), cex = .7)
-legend("bottomleft", legend = levels(sc.edges.condensed$Type)[-1], col = 2:5, pch = 17, cex = .7)}
+legend("bottomleft", legend = sort(unique(sc.edges.condensed$Type))[-1], col = 2:5, pch = 17, cex = .7)}
 ```
 
 #### How do we create a unimodal network from a bipartite one?
 
-<center>![genius?](/Users/janecarlen/Documents/DSI/network_analysis_in_R/goodwill_question.jpg)</center>
+<!-- center>![genius?](/Users/janecarlen/Documents/DSI/network_analysis_in_R/goodwill_question.jpg)</center> -->
 
 ```{r supreme_court_network_unimode, echo = T, cache = T, warning = F, message = F}
 
@@ -200,7 +208,7 @@ library(lubridate) #for "year" function
 sc.nodes$birthyear = year(as.Date(as.character(sc.nodes$Date.of.birth), format = "%m/%d/%Y"))
 
 sc.attr.list = list(label = c(as.character(sc.nodes$Label)),
-                          appointed = as.numeric(sc.nodes$Appointing.President[1:n.judges]),
+                          appointed = as.numeric(as.factor(sc.nodes$Appointing.President[1:n.judges])),
                           appearances = diag(sc.projection),
                           religion = as.character(sc.nodes$Religion..broad.[1:n.judges]),
                           gender = as.character(sc.nodes$Gender[1:n.judges]),
@@ -407,7 +415,7 @@ sc.ergm.thin.gw = ergm(sc.unimode.thin ~ edges +
 
 # Then we would check MCMC diagnostics and goodness-of-fit
 summary(sc.ergm.thin.gw)
-plot(sc.ergm.thin.gw) #same as mcmc.diagnostics(sc.ergm.thin.gw)
+mcmc.diagnostics(sc.ergm.thin.gw)
 sc.ergm.thin.gw.gof = gof(sc.ergm.thin.gw)
 plot(sc.ergm.thin.gw.gof)
 
@@ -502,7 +510,7 @@ We remove self-citations by making the diagonal of the adjacency matrix zero. In
 
 library(igraph)
 
-Cmatrix = as.matrix(read.csv(paste(wd, "data/cross-citation-matrix.csv", sep = ""), row.names = 1)) #47 x 47
+Cmatrix = as.matrix(read.csv(file.path(wd, "data/cross-citation-matrix.csv"), row.names = 1)) #47 x 47
 Cmatrix.diag = Cmatrix #store a copy before removing diag
 diag(Cmatrix) = rep(0,47)
 Tmatrix = Cmatrix + t(Cmatrix)
@@ -766,7 +774,7 @@ text(strength(Cgraph, mode = "in"), cen.pagerank, labels = rownames(Cmatrix), ce
 
 ```
 
-<center>![Sergei](/Users/janecarlen/Documents/DSI/network_analysis_in_R/sergei_brin.jpg)</center>
+<!-- <center>![Sergei](/Users/janecarlen/Documents/DSI/network_analysis_in_R/sergei_brin.jpg)</center> -->
 
 **How do we choose?**
 
@@ -1199,7 +1207,7 @@ sc.coin = coin(t(as.sociomatrix(sc.bipartite)))
 
 # Create node data frame
 tmp = asNodes(sc.coin); tmp$Label = sc.nodes$Label[1:n.judges]
-sc.nodes = read.csv(paste(wd, "data/GSoCversionOpinions-NODES.csv", sep = ""))
+sc.nodes = read.csv(file.path(wd, "data/GSoCversionOpinions-NODES.csv"))
 sc.nodes = data.frame(cbind(name = as.character(sc.nodes$Label), sc.nodes))
 sc.nodes.tmp = sc.nodes[1:n.judges,]
 sc.nodes.tmp$name = 1:14 # a character vector didn't work REPORT!
@@ -1239,7 +1247,7 @@ This should generate a plot in a web browser. We can use the drop-down to compar
 
 These are the formulas for the other metrics in the Links drop-down menus. Here the diagonal of the adjacency matrix is equal to the number of appearances of each justice:
 
-- frequencies = $A_{ij}$
+- coincidences = $A_{ij}$
 - sConditional = $A_{ij}/A_{ii}$
 - tConditional = $A_{ij}/A_{jj}$
 - Russel is $\frac{a}{a+b+c+d}$
@@ -1248,7 +1256,7 @@ These are the formulas for the other metrics in the Links drop-down menus. Here 
 As expected, the Kulczynski metric can highlight relationships other than those among the nodes that appear most often. The Haberman metric, and with it the P(Z), can as well reflecting their standardization. The following table summarizes the correlations between the metrics.
 
 ```{r judges_netcoin_cor, eval = T, echo = T, message = F, warning = F, cache = T}
-round(cor(sc.allnet[["links"]][,c("frequencies", "sConditional", "tConditional", "Russell", "Kulczynski", "Haberman", "p(Z)")]), 2)
+round(cor(sc.allnet[["links"]][,c("coincidences", "sConditional", "tConditional", "Russell", "Kulczynski", "Haberman", "p(Z)")]), 2)
 ```
 
 ## B) Dynamic visualization with `networkDynamic` and `ndtv`
